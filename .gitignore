@@ -1,0 +1,14 @@
+/RUNNING_PID
+/logs/
+/project/*-shim.sbt
+/project/project/
+/project/target/
+/target/
+
+activator
+activator-launch-1.2.10.jar
+activator.bat
+.classpath_nb
+input.pmml.xml
+LICENSE
+output.pmml.xml
