@@ -1,10 +1,10 @@
-name := "easyminer"
+name := "easyminer-apriori-r"
 
 version := "1.0"
 
 scalaVersion := "2.10.4"
 
-scalacOptions ++= Seq("-unchecked", "-deprecation")
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
 
 libraryDependencies ++= {
   val akkaV = "2.3.6"

@@ -14,13 +14,15 @@ import spray.routing.SimpleRoutingApp
 object Main extends App with SimpleRoutingApp with Aaa {
   //implicit val system = ActorSystem("easyminer-rest-system")
   
-  val conn = new RConnection("192.168.137.128", 6311)
-  println(conn.eval("rnorm(10)").asDoubles.toList)
-  conn.close
-
-  println(Template.apply("RAprioriWithMySQL.mustache"))
+//  val conn = new RConnection("192.168.137.128", 6311)
+//  println(conn.eval("rnorm(10)").asDoubles.toList)
+//  conn.close
+//
+//  println(Template.apply("RAprioriWithMySQL.mustache"))
   
-  println(new PMMLMySQLTask(xml.XML.loadFile("input.pmml.xml")).prepareDataset(aa => aa.fetchValuesByColName("author")))
+  val task = new PMMLMySQLTask(xml.XML.loadFile("input.pmml.xml"))
+  println(task.fetchConsequent)
+  //println(.prepareDataset(aa => aa.fetchValuesByColName("author")))
   
 //  startServer(interface = "localhost", port = 8080) {
 //    pathPrefix("api") {
