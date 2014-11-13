@@ -3,7 +3,6 @@ package cz.vse.easyminer.rest
 import akka.actor.ActorSystem
 import com.typesafe.scalalogging.slf4j.Logger
 import cz.vse.easyminer.miner.impl.PMMLMySQLTask
-import cz.vse.easyminer.miner.impl.RAprioriProcess
 import cz.vse.easyminer.util.Template
 import org.fusesource.scalate.TemplateEngine
 import org.rosuda.REngine.Rserve.RConnection
@@ -21,7 +20,9 @@ object Main extends App with SimpleRoutingApp with Aaa {
 //  println(Template.apply("RAprioriWithMySQL.mustache"))
   
   val task = new PMMLMySQLTask(xml.XML.loadFile("input.pmml.xml"))
+  println(task.fetchAntecedent)
   println(task.fetchConsequent)
+  println(task.fetchInterestMeasures)
   //println(.prepareDataset(aa => aa.fetchValuesByColName("author")))
   
 //  startServer(interface = "localhost", port = 8080) {
