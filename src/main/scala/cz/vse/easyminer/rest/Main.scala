@@ -2,6 +2,8 @@ package cz.vse.easyminer.rest
 
 import akka.actor.ActorSystem
 import com.typesafe.scalalogging.slf4j.Logger
+import cz.vse.easyminer.miner.MinerTask
+import cz.vse.easyminer.miner.impl.MySQLAprioriRProcess
 import cz.vse.easyminer.miner.impl.PMMLMySQLTask
 import cz.vse.easyminer.util.Template
 import org.fusesource.scalate.TemplateEngine
@@ -19,10 +21,10 @@ object Main extends App with SimpleRoutingApp with Aaa {
 //
 //  println(Template.apply("RAprioriWithMySQL.mustache"))
   
-  val task = new PMMLMySQLTask(xml.XML.loadFile("input.pmml.xml"))
-  println(task.fetchAntecedent)
-  println(task.fetchConsequent)
-  println(task.fetchInterestMeasures)
+  val pmml = xml.XML.loadFile("input.pmml.xml")
+  val task = new PMMLMySQLTask(pmml)
+  val process = new MySQLAprioriRProcess(pmml, "192.168.137.128")
+  process.mine(MinerTask(task.fetchAntecedent, task.fetchInterestMeasures, task.fetchConsequent))
   //println(.prepareDataset(aa => aa.fetchValuesByColName("author")))
   
 //  startServer(interface = "localhost", port = 8080) {
