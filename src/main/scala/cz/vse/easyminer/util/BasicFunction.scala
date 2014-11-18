@@ -20,6 +20,8 @@ object BasicFunction {
   
   def tryClose[A, B <: { def close(): Unit }](closeable: B)(f: B => A): A = try { f(closeable) } finally { closeable.close() }
   
+  def tryCloseBool[A, B <: { def close(): Boolean }](closeable: B)(f: B => A): A = try { f(closeable) } finally { closeable.close() }
+  
   def optToThat[T]: PartialFunction[Option[T], T] = {case Some(x) => x} 
   
 }

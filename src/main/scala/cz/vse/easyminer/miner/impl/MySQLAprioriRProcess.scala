@@ -1,21 +1,30 @@
 package cz.vse.easyminer.miner.impl
 
 import cz.vse.easyminer.miner.AND
+import cz.vse.easyminer.miner.ARule
 import cz.vse.easyminer.miner.AllValues
 import cz.vse.easyminer.miner.Attribute
 import cz.vse.easyminer.miner.BadInputData
 import cz.vse.easyminer.miner.BoolExpression
+import cz.vse.easyminer.miner.Confidence
+import cz.vse.easyminer.miner.ContingencyTable
 import cz.vse.easyminer.miner.FixedValue
+import cz.vse.easyminer.miner.Lift
 import cz.vse.easyminer.miner.MinerProcess
 import cz.vse.easyminer.miner.MinerResult
 import cz.vse.easyminer.miner.MinerTask
 import cz.vse.easyminer.miner.NOT
 import cz.vse.easyminer.miner.OR
+import cz.vse.easyminer.miner.Support
 import cz.vse.easyminer.miner.Value
+import cz.vse.easyminer.util.AnyToDouble
 import cz.vse.easyminer.util.Template
 import org.rosuda.REngine.Rserve.RConnection
 
 class MySQLAprioriRProcess(pmml: scala.xml.Elem, rServer: String, rPort: Int = 6311) extends MinerProcess {
+  
+  val defaultSupport = 0.001
+  val defaultConfidence = 0.2
   
   private val jdbcDriverAbsolutePath = "/home/venca/RWorks/mysql-jdbc";
   
@@ -29,18 +38,8 @@ class MySQLAprioriRProcess(pmml: scala.xml.Elem, rServer: String, rPort: Int = 6
     }
   }
   
-  //private val conn = new RConnection(rServer, rPort)
-  
   def prepareDataset[T]: (MySQLDataset => T) => T = {
     MySQLDataset.apply(dbServer, dbName, dbUser, dbPass, dbTableName) _
-  }
-  
-  object ANDOR {
-    def unapply(exp: BoolExpression[Attribute]) = exp match {
-      case AND(a, b) => Some(a, b)
-      case OR(a, b) => Some(a, b)
-      case _ => None
-    }
   }
   
   private def joinMaps(m1 : Map[String, String], m2 : Map[String, String], f: (String, String) => String) = m1.foldLeft(m2){
@@ -65,20 +64,45 @@ class MySQLAprioriRProcess(pmml: scala.xml.Elem, rServer: String, rPort: Int = 6
     case(k, v) => s"IF($v, `$k`, NULL) AS `$k`"
   }
   
-  def toSQLSelect(exp: BoolExpression[Attribute]) : String = {
+  private def toSQLSelect(exp: BoolExpression[Attribute]) : String = {
     toSQLMap(exp)
     .map(mapToSQLSelect)
     .mkString(", ")
   }
   
-  def toRValues(exp: BoolExpression[Attribute]) = prepareDataset(mysql =>
+  private def toRValues(exp: BoolExpression[Attribute]) = prepareDataset(mysql =>
     toSQLMap(exp)
     .map(kv => mysql.fetchValuesBySelectAndColName(mapToSQLSelect(kv), kv._1) collect {case(Some(v)) => "\"" + s"${kv._1}=$v" + "\""})
     .flatMap(x => x)
     .mkString(", ")
   )
   
+  object ANDOR {
+    def unapply(exp: BoolExpression[Attribute]) = exp match {
+      case AND(a, b) => Some(a, b)
+      case OR(a, b) => Some(a, b)
+      case _ => None
+    }
+  }
+  
+  object RresultToBoolExpression {
+    def unapply(str: String) = str
+    .split(',')
+    .map(_.split("=", 2))
+    .collect{
+      case Array(k, v) => Value(FixedValue(k, v)) : BoolExpression[FixedValue]
+    }
+    .reduceLeftOption(_ AND _)
+  }
+  
   def mine(mt: MinerTask) : MinerResult = {
+    import cz.vse.easyminer.util.BasicFunction._
+    val im = mt.interestMeasures.foldLeft(Map("confidence" -> defaultConfidence, "support" -> defaultSupport)) {
+      case (m, Confidence(x)) => m + ("confidence" -> x)
+      case (m, Support(x)) => m + ("support" -> x)
+      case (m, Lift(x)) => m + ("lift" -> x)
+      case (m, _) => m
+    }
     val rscript = Template(
       "RAprioriWithMySQL.mustache",
       Map(
@@ -90,10 +114,22 @@ class MySQLAprioriRProcess(pmml: scala.xml.Elem, rServer: String, rPort: Int = 6
         "dbTableName" -> dbTableName,
         "selectQuery" -> toSQLSelect(mt.antecedent OR mt.consequent),
         "consequent" -> toRValues(mt.consequent)
-      )
+      ) ++ im
     )
-    println(rscript)
-    null
+    tryCloseBool(new RConnection(rServer, rPort))(conn => {
+        val ArulePattern = """\d+\s+\{(.+)\}\s+=>\s+\{(.+)\}\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)""".r
+        MinerResult(
+          conn
+          .parseAndEval(rscript.trim.replaceAll("\r\n", "\n"))
+          .asStrings
+          .collect {
+            case ArulePattern(RresultToBoolExpression(ant), RresultToBoolExpression(con), AnyToDouble(supp), AnyToDouble(conf), AnyToDouble(lift)) =>
+              ARule(ant, con, Set(Support(supp), Confidence(conf), Lift(lift)), ContingencyTable(0, 0, 0, 0))
+          }
+          .toSeq
+        )
+      }
+    )
   }
   
 }

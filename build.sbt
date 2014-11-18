@@ -6,6 +6,12 @@ scalaVersion := "2.10.4"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
 
+//fork in run := true
+
+//javaOptions in run ++= Seq("-Duser.country=US", "-Duser.language=en")
+
+//outputStrategy := Some(StdoutOutput)
+
 libraryDependencies ++= {
   val akkaV = "2.3.6"
   val sprayV = "1.3.2"

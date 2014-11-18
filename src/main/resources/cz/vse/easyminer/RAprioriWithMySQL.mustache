@@ -10,29 +10,8 @@
 @param Double         support
 @param String         consequent
 }}
-
-#start.time <- Sys.time()
-
-#load libraries
 library(RJDBC)
 library(arules)
-
-# load data from cassandra
-# drv <- JDBC("org.apache.cassandra.cql.jdbc.CassandraDriver", list.files("/home/venca/RWorks/cassandra-jdbc", pattern="jar$",full.names=T))
-# casscon <- dbConnect(drv, "jdbc:cassandra://localhost:9160/easyminer")
-# train <- dbGetQuery(casscon, "select * from test limit 5000")
-# lastid <- tail(train, 1)$id
-# repeat{
- # sql <- paste("select * from test where token(id) > token(", lastid, ") limit 5000", sep="")   
- # train1 <- dbGetQuery(casscon, sql)
- # if (nrow(train1) == 0){
-  # break
- # }
- # lastid <- tail(train1, 1)$id
- # train <- rbind(train, train1)
- # print(paste("loaded: ", nrow(train)))
-# }
-# dbDisconnect(casscon)
 
 # load data from mysql
 drv <- JDBC("com.mysql.jdbc.Driver", list.files("{{jdbcDriverAbsolutePath}}", pattern="jar$",full.names=T))
@@ -40,21 +19,12 @@ con<- dbConnect(drv, "jdbc:mysql://{{{dbServer}}}:3306/{{{dbName}}}", "{{{dbUser
 train <- dbGetQuery(con, "SELECT {{{selectQuery}}} FROM {{{dbTableName}}}")
 dbDisconnect(con)
 
-#normalize data
-#train <- read.csv("testdata.csv",header=TRUE, sep = ";")
-#train <- na.omit(train)
-train <- subset(train, select = -c(id))
+# normalize data
 train <- sapply(train,as.factor)
 train <- data.frame(train)
 
-#arules processing
+# arules processing
 txns <- as(train,"transactions")
-rules <- apriori(txns, parameter = list(confidence = {{{confidence}}}, support = {{{support}}}), appearance = list(rhs = c({{{consequent}}}), default="lhs"))
-#rules <- sort(rules, by = "confidence")
+rules <- apriori(txns, parameter = list(confidence = {{{confidence}}}, support = {{{support}}}{{#lift}}, lift = {{{lift}}}{{/lift}}), appearance = list(rhs = c({{{consequent}}}), default="lhs"))
 rules <- as(rules,"data.frame")
-capture.output(println(rules))
-#write.csv(rules, "output.csv", row.names=TRUE, quote = TRUE)
-
-#end.time <- Sys.time()
-#time.taken <- end.time - start.time
-#time.taken
+capture.output(print(rules))

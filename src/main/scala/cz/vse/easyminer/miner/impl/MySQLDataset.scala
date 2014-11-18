@@ -19,10 +19,13 @@ object MySQLDataset {
   
   def apply[T](dbServer: String, dbName: String, dbUser: String, dbPass: String, dbTableName: String)(dbq: MySQLDataset => T) = {
     val cpName = UUID.randomUUID.toString
-    ConnectionPool.add(cpName, s"jdbc:mysql://$dbServer:3306/$dbName", dbUser, dbPass)
-    val result = dbq(new MySQLDataset(() => NamedDB(cpName), dbTableName))
-    ConnectionPool.close(cpName)
-    result
+    try {
+      ConnectionPool.add(cpName, s"jdbc:mysql://$dbServer:3306/$dbName", dbUser, dbPass)
+      val result = dbq(new MySQLDataset(() => NamedDB(cpName), dbTableName))
+      result
+    } finally {
+      ConnectionPool.close(cpName)
+    }
   }
   
 }
