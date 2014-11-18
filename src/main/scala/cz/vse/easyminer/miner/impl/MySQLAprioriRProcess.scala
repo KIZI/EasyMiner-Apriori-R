@@ -8,6 +8,7 @@ import cz.vse.easyminer.miner.BadInputData
 import cz.vse.easyminer.miner.BoolExpression
 import cz.vse.easyminer.miner.Confidence
 import cz.vse.easyminer.miner.ContingencyTable
+import cz.vse.easyminer.miner.Count
 import cz.vse.easyminer.miner.FixedValue
 import cz.vse.easyminer.miner.Lift
 import cz.vse.easyminer.miner.MinerProcess
@@ -38,11 +39,16 @@ class MySQLAprioriRProcess(pmml: scala.xml.Elem, rServer: String, rPort: Int = 6
     }
   }
   
-  def prepareDataset[T]: (MySQLDataset => T) => T = {
+  private val mapToSQLSelect : PartialFunction[(String, String), String] = {
+    case(k, "") => k
+    case(k, v) => s"IF($v, `$k`, NULL) AS `$k`"
+  }
+  
+  private def prepareDataset[T]: (MySQLDataset => T) => T = {
     MySQLDataset.apply(dbServer, dbName, dbUser, dbPass, dbTableName) _
   }
   
-  private def joinMaps(m1 : Map[String, String], m2 : Map[String, String], f: (String, String) => String) = m1.foldLeft(m2){
+  private def joinSQLMaps(m1 : Map[String, String], m2 : Map[String, String], f: (String, String) => String) = m1.foldLeft(m2){
     case (r, t @ (k, _)) if !r.contains(k) => r + t
     case (r, (k, v)) => {
         val rv = r(k)
@@ -51,31 +57,22 @@ class MySQLAprioriRProcess(pmml: scala.xml.Elem, rServer: String, rPort: Int = 6
   }
     
   private def toSQLMap(exp: BoolExpression[Attribute]) : Map[String, String] = exp match {
-    case AND(a, b) => joinMaps(toSQLMap(a), toSQLMap(b), (a, b) => s"($a AND $b)")
-    case OR(a, b) => joinMaps(toSQLMap(a), toSQLMap(b), (a, b) => s"($a OR $b)")
+    case AND(a, b) => joinSQLMaps(toSQLMap(a), toSQLMap(b), (a, b) => s"($a AND $b)")
+    case OR(a, b) => joinSQLMaps(toSQLMap(a), toSQLMap(b), (a, b) => s"($a OR $b)")
     case Value(AllValues(a)) => Map(a -> "")
     case Value(FixedValue(a, v)) => Map(a -> s"`$a` = '$v'")
     case NOT(a) => toSQLMap(a) map {case(k, v) => k -> (if (v.isEmpty) v else s"NOT($v)")}
     case _ => Map.empty
   }
   
-  private val mapToSQLSelect : PartialFunction[(String, String), String] = {
-    case(k, "") => k
-    case(k, v) => s"IF($v, `$k`, NULL) AS `$k`"
-  }
+  private def toSQLSelect(exp: BoolExpression[Attribute]) : String = toSQLMap(exp)
+  .map(mapToSQLSelect)
+  .mkString(", ")
   
-  private def toSQLSelect(exp: BoolExpression[Attribute]) : String = {
-    toSQLMap(exp)
-    .map(mapToSQLSelect)
-    .mkString(", ")
-  }
-  
-  private def toRValues(exp: BoolExpression[Attribute]) = prepareDataset(mysql =>
-    toSQLMap(exp)
-    .map(kv => mysql.fetchValuesBySelectAndColName(mapToSQLSelect(kv), kv._1) collect {case(Some(v)) => "\"" + s"${kv._1}=$v" + "\""})
-    .flatMap(x => x)
-    .mkString(", ")
-  )
+  private def toRValues(exp: BoolExpression[Attribute])(implicit mysql: MySQLDataset) = toSQLMap(exp)
+  .map(kv => mysql.fetchValuesBySelectAndColName(mapToSQLSelect(kv), kv._1) collect {case(Some(v)) => "\"" + s"${kv._1}=$v" + "\""})
+  .flatMap(x => x)
+  .mkString(", ")
   
   object ANDOR {
     def unapply(exp: BoolExpression[Attribute]) = exp match {
@@ -95,41 +92,45 @@ class MySQLAprioriRProcess(pmml: scala.xml.Elem, rServer: String, rPort: Int = 6
     .reduceLeftOption(_ AND _)
   }
   
-  def mine(mt: MinerTask) : MinerResult = {
-    import cz.vse.easyminer.util.BasicFunction._
-    val im = mt.interestMeasures.foldLeft(Map("confidence" -> defaultConfidence, "support" -> defaultSupport)) {
-      case (m, Confidence(x)) => m + ("confidence" -> x)
-      case (m, Support(x)) => m + ("support" -> x)
-      case (m, Lift(x)) => m + ("lift" -> x)
-      case (m, _) => m
-    }
-    val rscript = Template(
-      "RAprioriWithMySQL.mustache",
-      Map(
-        "jdbcDriverAbsolutePath" -> jdbcDriverAbsolutePath,
-        "dbServer" -> dbServer,
-        "dbName" -> dbName,
-        "dbUser" -> dbUser,
-        "dbPassword" -> dbPass,
-        "dbTableName" -> dbTableName,
-        "selectQuery" -> toSQLSelect(mt.antecedent OR mt.consequent),
-        "consequent" -> toRValues(mt.consequent)
-      ) ++ im
-    )
-    tryCloseBool(new RConnection(rServer, rPort))(conn => {
-        val ArulePattern = """\d+\s+\{(.+)\}\s+=>\s+\{(.+)\}\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)""".r
-        MinerResult(
-          conn
-          .parseAndEval(rscript.trim.replaceAll("\r\n", "\n"))
-          .asStrings
-          .collect {
-            case ArulePattern(RresultToBoolExpression(ant), RresultToBoolExpression(con), AnyToDouble(supp), AnyToDouble(conf), AnyToDouble(lift)) =>
-              ARule(ant, con, Set(Support(supp), Confidence(conf), Lift(lift)), ContingencyTable(0, 0, 0, 0))
-          }
-          .toSeq
-        )
+  def mine(mt: MinerTask) : MinerResult = prepareDataset(implicit mysql => {
+      import cz.vse.easyminer.util.BasicFunction._
+      val im = mt.interestMeasures.foldLeft(Map("confidence" -> defaultConfidence, "support" -> defaultSupport)) {
+        case (m, Confidence(x)) => m + ("confidence" -> x)
+        case (m, Support(x)) => m + ("support" -> x)
+        case (m, Lift(x)) => m + ("lift" -> x)
+        case (m, _) => m
       }
-    )
-  }
+      val rscript = Template(
+        "RAprioriWithMySQL.mustache",
+        Map(
+          "jdbcDriverAbsolutePath" -> jdbcDriverAbsolutePath,
+          "dbServer" -> dbServer,
+          "dbName" -> dbName,
+          "dbUser" -> dbUser,
+          "dbPassword" -> dbPass,
+          "dbTableName" -> dbTableName,
+          "selectQuery" -> toSQLSelect(mt.antecedent OR mt.consequent),
+          "consequent" -> toRValues(mt.consequent)
+        ) ++ im
+      )
+      tryCloseBool(new RConnection(rServer, rPort))(conn => {
+          val ArulePattern = """\d+\s+\{(.+)\}\s+=>\s+\{(.+)\}\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)""".r
+          val count = Count(mysql.fetchCount)
+          MinerResult(
+            conn
+            .parseAndEval(rscript.trim.replaceAll("\r\n", "\n"))
+            .asStrings
+            .collect {
+              case ArulePattern(RresultToBoolExpression(ant), RresultToBoolExpression(con), AnyToDouble(s), AnyToDouble(c), AnyToDouble(l)) => {
+                  val (supp, conf, lift) = (Support(s), Confidence(c), Lift(l))
+                  ARule(ant, con, Set(supp, conf, lift, count), ContingencyTable(supp, conf, lift, count))
+                }
+            }
+            .toSeq
+          )
+        }
+      )
+    }
+  )
   
 }

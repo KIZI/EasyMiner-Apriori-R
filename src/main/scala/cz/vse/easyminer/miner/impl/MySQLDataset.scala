@@ -33,11 +33,15 @@ object MySQLDataset {
 class MySQLDataset private (db: () => NamedDB, dbTableName: String) { 
   
   def fetchValuesBySelectAndColName(select: String, col: String) = db() readOnly (implicit session =>
-    SQL.apply(s"SELECT DISTINCT $select FROM $dbTableName").map(_.stringOpt(col)).list.apply
+    SQL.apply(s"SELECT DISTINCT $select FROM `$dbTableName`").map(_.stringOpt(col)).list.apply
   )
   
   def fetchValuesByColName(col: String) = db() readOnly (implicit session =>
-    SQL.apply(s"SELECT DISTINCT $col FROM $dbTableName").map(_.string(col)).list.apply
+    SQL.apply(s"SELECT DISTINCT `$col` FROM `$dbTableName`").map(_.string(col)).list.apply
+  )
+  
+  def fetchCount = db() readOnly (implicit session =>
+    SQL.apply(s"SELECT COUNT(*) AS count FROM `$dbTableName`").map(_.int("count")).first.apply.getOrElse(0)
   )
   
 }
