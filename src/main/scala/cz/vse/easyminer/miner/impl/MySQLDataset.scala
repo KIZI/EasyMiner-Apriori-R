@@ -7,6 +7,16 @@ object MySQLDataset {
   
   Class.forName("com.mysql.jdbc.Driver")
   
+  GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(
+    enabled = true,
+    singleLineMode = true,
+    printUnprocessedStackTrace = false,
+    stackTraceDepth = 15,
+    logLevel = 'info,
+    warningEnabled = true,
+    warningThresholdMillis = 3000L,
+    warningLogLevel = 'warn)
+  
   def apply[T](dbServer: String, dbName: String, dbUser: String, dbPass: String, dbTableName: String)(dbq: MySQLDataset => T) = {
     val cpName = UUID.randomUUID.toString
     ConnectionPool.add(cpName, s"jdbc:mysql://$dbServer:3306/$dbName", dbUser, dbPass)
@@ -18,6 +28,10 @@ object MySQLDataset {
 }
   
 class MySQLDataset private (db: () => NamedDB, dbTableName: String) { 
+  
+  def fetchValuesBySelectAndColName(select: String, col: String) = db() readOnly (implicit session =>
+    SQL.apply(s"SELECT DISTINCT $select FROM $dbTableName").map(_.stringOpt(col)).list.apply
+  )
   
   def fetchValuesByColName(col: String) = db() readOnly (implicit session =>
     SQL.apply(s"SELECT DISTINCT $col FROM $dbTableName").map(_.string(col)).list.apply

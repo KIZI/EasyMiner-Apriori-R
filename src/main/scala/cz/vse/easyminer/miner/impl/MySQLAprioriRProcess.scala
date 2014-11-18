@@ -12,9 +12,12 @@ import cz.vse.easyminer.miner.MinerTask
 import cz.vse.easyminer.miner.NOT
 import cz.vse.easyminer.miner.OR
 import cz.vse.easyminer.miner.Value
+import cz.vse.easyminer.util.Template
 import org.rosuda.REngine.Rserve.RConnection
 
 class MySQLAprioriRProcess(pmml: scala.xml.Elem, rServer: String, rPort: Int = 6311) extends MinerProcess {
+  
+  private val jdbcDriverAbsolutePath = "/home/venca/RWorks/mysql-jdbc";
   
   private val (dbServer, dbName, dbUser, dbPass, dbTableName) = {
     val extensions = (pmml \ "Header" \ "Extension").map(ext =>
@@ -40,37 +43,56 @@ class MySQLAprioriRProcess(pmml: scala.xml.Elem, rServer: String, rPort: Int = 6
     }
   }
   
-  /**
-   * udelat antecedent OR consequent - tim zamixujeme vsechny itemsety
-   * polozit dotaz na mysql z aktualnim selectem. Udelat select distinct jen pro atributy consequentu. Prepsat do Rka
-   */
+  private def joinMaps(m1 : Map[String, String], m2 : Map[String, String], f: (String, String) => String) = m1.foldLeft(m2){
+    case (r, t @ (k, _)) if !r.contains(k) => r + t
+    case (r, (k, v)) => {
+        val rv = r(k)
+        r + (k -> (if (rv.isEmpty || v.isEmpty) "" else f(rv, v))) 
+      }
+  }
+    
+  private def toSQLMap(exp: BoolExpression[Attribute]) : Map[String, String] = exp match {
+    case AND(a, b) => joinMaps(toSQLMap(a), toSQLMap(b), (a, b) => s"($a AND $b)")
+    case OR(a, b) => joinMaps(toSQLMap(a), toSQLMap(b), (a, b) => s"($a OR $b)")
+    case Value(AllValues(a)) => Map(a -> "")
+    case Value(FixedValue(a, v)) => Map(a -> s"`$a` = '$v'")
+    case NOT(a) => toSQLMap(a) map {case(k, v) => k -> (if (v.isEmpty) v else s"NOT($v)")}
+    case _ => Map.empty
+  }
+  
+  private val mapToSQLSelect : PartialFunction[(String, String), String] = {
+    case(k, "") => k
+    case(k, v) => s"IF($v, `$k`, NULL) AS `$k`"
+  }
+  
   def toSQLSelect(exp: BoolExpression[Attribute]) : String = {
-    def joinMaps(m1 : Map[String, String], m2 : Map[String, String], f: (String, String) => String) = m1.foldLeft(m2){
-      case (r, t @ (k, _)) if !r.contains(k) => r + t
-      case (r, (k, v)) => {
-          val rv = r(k)
-          r + (k -> (if (rv.isEmpty || v.isEmpty) "" else f(rv, v))) 
-        }
-    }
-    def toSQLMap(exp: BoolExpression[Attribute]) : Map[String, String] = exp match {
-      case AND(a, b) => joinMaps(toSQLMap(a), toSQLMap(b), (a, b) => s"($a AND $b)")
-      case OR(a, b) => joinMaps(toSQLMap(a), toSQLMap(b), (a, b) => s"($a OR $b)")
-      case Value(AllValues(a)) => Map(a -> "")
-      case Value(FixedValue(a, v)) => Map(a -> s"`$a` = '$v'")
-      case NOT(a) => toSQLMap(a) map {case(k, v) => k -> (if (v.isEmpty) v else s"NOT($v)")}
-      case _ => Map.empty
-    }
     toSQLMap(exp)
-    .map{
-      case(k, "") => k
-      case(k, v) => s"IF($v, `$k`, NULL) AS `$k`"
-    }
+    .map(mapToSQLSelect)
     .mkString(", ")
   }
   
+  def toRValues(exp: BoolExpression[Attribute]) = prepareDataset(mysql =>
+    toSQLMap(exp)
+    .map(kv => mysql.fetchValuesBySelectAndColName(mapToSQLSelect(kv), kv._1) collect {case(Some(v)) => "\"" + s"${kv._1}=$v" + "\""})
+    .flatMap(x => x)
+    .mkString(", ")
+  )
+  
   def mine(mt: MinerTask) : MinerResult = {
-    println(mt.antecedent)
-    println(toSQLSelect(mt.antecedent))
+    val rscript = Template(
+      "RAprioriWithMySQL.mustache",
+      Map(
+        "jdbcDriverAbsolutePath" -> jdbcDriverAbsolutePath,
+        "dbServer" -> dbServer,
+        "dbName" -> dbName,
+        "dbUser" -> dbUser,
+        "dbPassword" -> dbPass,
+        "dbTableName" -> dbTableName,
+        "selectQuery" -> toSQLSelect(mt.antecedent OR mt.consequent),
+        "consequent" -> toRValues(mt.consequent)
+      )
+    )
+    println(rscript)
     null
   }
   

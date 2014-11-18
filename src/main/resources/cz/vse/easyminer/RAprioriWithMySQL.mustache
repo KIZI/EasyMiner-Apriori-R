@@ -5,6 +5,7 @@
 @param String         dbUser
 @param String         dbPassword
 @param String         dbTableName
+@param String         selectQuery
 @param Double         confidence
 @param Double         support
 @param String         consequent
@@ -35,8 +36,8 @@ library(arules)
 
 # load data from mysql
 drv <- JDBC("com.mysql.jdbc.Driver", list.files("{{jdbcDriverAbsolutePath}}", pattern="jar$",full.names=T))
-con<- dbConnect(drv, "jdbc:mysql://{{dbServer}}localhost:3306/{{dbName}}", "{{dbUser}}", "{{dbPassword}}")
-train <- dbGetQuery(con, "SELECT * FROM {{dbTableName}}")
+con<- dbConnect(drv, "jdbc:mysql://{{{dbServer}}}:3306/{{{dbName}}}", "{{{dbUser}}}", "{{{dbPassword}}}")
+train <- dbGetQuery(con, "SELECT {{{selectQuery}}} FROM {{{dbTableName}}}")
 dbDisconnect(con)
 
 #normalize data
@@ -48,7 +49,7 @@ train <- data.frame(train)
 
 #arules processing
 txns <- as(train,"transactions")
-rules <- apriori(txns, parameter = list(confidence = {{confidence}}, support = {{support}}), appearance = list(rhs = {{consequent}}, default="lhs"))
+rules <- apriori(txns, parameter = list(confidence = {{{confidence}}}, support = {{{support}}}), appearance = list(rhs = c({{{consequent}}}), default="lhs"))
 #rules <- sort(rules, by = "confidence")
 rules <- as(rules,"data.frame")
 capture.output(println(rules))
