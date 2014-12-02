@@ -1,3 +1,28 @@
+{{!
+@param Integer        number-of-rules
+@param Seq            bbas
+@param  String         id
+@param  String         text           
+@param  String         name           
+@param  String         value          
+@param Seq            dbas           
+@param  String         id             
+@param  String         text           
+@param  Seq[String]    barefs         
+@param Seq            arules         
+@param  String         id
+@param  String         id-antecedent
+@param  String         id-consequent
+@param  Double         conf
+@param  Double         supp
+@param  Double         lift
+@param  Integer        a
+@param  Integer        b
+@param  Integer        c
+@param  Integer        d
+@param  Integer        r
+@param  Integer        n
+}}
 <?xml version="1.0" encoding="UTF-8"?>
 <PMML version="4.0" xmlns="http://www.dmg.org/PMML-4_0" 
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
@@ -12,7 +37,7 @@
                             algorithmName="Apriori" 
                             numberOfTransactions="0" 
                             numberOfCategories="0" 
-                            numberOfRules="{{numberOfRules}}"
+                            numberOfRules="{{number-of-rules}}"
     >
         
         <AssociationRules>
@@ -29,7 +54,7 @@
             <DBA id="{{id}}" connective="Conjunction" literal="true">
                 <Text>{{text}}</Text>
                 {{#barefs}}
-                <BARef>{{_}}</BARef>
+                <BARef>{{.}}</BARef>
                 {{/barefs}}
             </DBA>
             {{/dbas}}

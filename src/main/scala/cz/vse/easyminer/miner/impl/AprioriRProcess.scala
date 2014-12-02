@@ -6,6 +6,9 @@ import cz.vse.easyminer.miner.BoolExpression
 import cz.vse.easyminer.miner.Confidence
 import cz.vse.easyminer.miner.ContingencyTable
 import cz.vse.easyminer.miner.Count
+import cz.vse.easyminer.miner.Dataset
+import cz.vse.easyminer.miner.DatasetBuilder
+import cz.vse.easyminer.miner.DatasetQueryBuilder
 import cz.vse.easyminer.miner.FixedValue
 import cz.vse.easyminer.miner.Lift
 import cz.vse.easyminer.miner.MinerProcess
@@ -16,17 +19,19 @@ import cz.vse.easyminer.util.AnyToDouble
 import cz.vse.easyminer.util.Template
 import org.rosuda.REngine.Rserve.RConnection
 
-class AprioriRMySQLProcess(rServer: String, rPort: Int = 6311) extends MinerProcess {
+class AprioriRProcess(
+  rTemplate: String,
+  jdbcDriverAbsolutePath: String,
+  rServer: String,
+  rPort: Int = 6311
+) extends MinerProcess {
   
-  self: PMMLMySQL =>
+  self: PMMLDB with DatasetBuilder with DatasetQueryBuilder =>
   
-  import MySQLQueryBuilder._
   import cz.vse.easyminer.util.BasicFunction._
   
   val defaultSupport = 0.001
   val defaultConfidence = 0.2
-  
-  private val jdbcDriverAbsolutePath = "/home/venca/RWorks/mysql-jdbc";
   
   object RAruleToBoolExpression {
     def unapply(str: String) = str
@@ -38,14 +43,14 @@ class AprioriRMySQLProcess(rServer: String, rPort: Int = 6311) extends MinerProc
     .reduceLeftOption(_ AND _)
   }
   
-  private def executeMySQLQueries[T]: (MySQLDataset => T) => T = {
-    MySQLDataset.apply(dbServer, dbName, dbUser, dbPass, dbTableName) _
+  private def executeQueries[T]: (Dataset => T) => T = {
+    buildAndExecute(dbServer, dbName, dbUser, dbPass, dbTableName) _
   }
   
   private def evalRScript(rscript: String) = tryCloseBool(new RConnection(rServer, rPort))(_.parseAndEval(rscript.trim.replaceAll("\r\n", "\n")).asStrings)
   
-  private def getInputRValues(exp: BoolExpression[Attribute])(implicit mysql: MySQLDataset) = toSQLSelectMap(exp)
-  .flatMap{case (k, v) => mysql.fetchValuesBySelectAndColName(v, k) collect {case(Some(v)) => "\"" + s"$k=$v" + "\""}}
+  private def getInputRValues(exp: BoolExpression[Attribute])(implicit db: Dataset) = toSQLSelectMap(exp)
+  .flatMap{case (k, v) => db.fetchValuesBySelectAndColName(v, k) collect {case(Some(v)) => "\"" + s"$k=$v" + "\""}}
   .mkString(", ")
   
   private def getInputSelectQuery(exp: BoolExpression[Attribute]) = toSQLSelect(exp)
@@ -62,7 +67,7 @@ class AprioriRMySQLProcess(rServer: String, rPort: Int = 6311) extends MinerProc
     pf
   }
   
-  def mine(mt: MinerTask) = executeMySQLQueries(implicit mysql => {
+  def mine(mt: MinerTask) = executeQueries(implicit db => {
       import cz.vse.easyminer.util.BasicFunction._
       val im = mt.interestMeasures.foldLeft(Map("confidence" -> defaultConfidence, "support" -> defaultSupport)) {
         case (m, Confidence(x)) => m + ("confidence" -> x)
@@ -71,7 +76,7 @@ class AprioriRMySQLProcess(rServer: String, rPort: Int = 6311) extends MinerProc
         case (m, _) => m
       }
       val rscript = Template(
-        "RAprioriWithMySQL.mustache",
+        rTemplate,
         Map(
           "jdbcDriverAbsolutePath" -> jdbcDriverAbsolutePath,
           "dbServer" -> dbServer,
@@ -83,7 +88,7 @@ class AprioriRMySQLProcess(rServer: String, rPort: Int = 6311) extends MinerProc
           "consequent" -> getInputRValues(mt.consequent)
         ) ++ im
       )
-      val count = Count(mysql.fetchCount)
+      val count = Count(db.fetchCount)
       evalRScript(rscript).collect(getOutputARuleMapper(count)).toSeq
     }
   )

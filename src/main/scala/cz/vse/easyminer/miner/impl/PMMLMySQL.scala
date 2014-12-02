@@ -2,9 +2,7 @@ package cz.vse.easyminer.miner.impl
 
 import cz.vse.easyminer.miner.BadInputData
 
-trait PMMLMySQL {
-
-  val pmml: scala.xml.Elem
+trait PMMLMySQL extends PMMLDB {
   
   lazy val (dbServer, dbName, dbUser, dbPass, dbTableName) = {
     val extensions = (pmml \ "Header" \ "Extension").map(ext =>

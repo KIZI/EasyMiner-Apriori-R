@@ -1,9 +1,11 @@
 package cz.vse.easyminer.miner.impl
 
+import cz.vse.easyminer.miner.Dataset
+import cz.vse.easyminer.miner.DatasetBuilder
 import java.util.UUID
 import scalikejdbc._
 
-object MySQLDataset {
+object MySQLDatasetBuilder {
   
   Class.forName("com.mysql.jdbc.Driver")
   
@@ -17,8 +19,14 @@ object MySQLDataset {
     warningThresholdMillis = 3000L,
     warningLogLevel = 'warn)
   
-  def apply[T](dbServer: String, dbName: String, dbUser: String, dbPass: String, dbTableName: String)(dbq: MySQLDataset => T) = {
-    val cpName = UUID.randomUUID.toString
+  def makeCpName = UUID.randomUUID.toString
+  
+}
+
+trait MySQLDatasetBuilder extends DatasetBuilder {
+  
+  def buildAndExecute[T](dbServer: String, dbName: String, dbUser: String, dbPass: String, dbTableName: String)(dbq: Dataset => T) = {
+    val cpName = MySQLDatasetBuilder.makeCpName
     try {
       ConnectionPool.add(cpName, s"jdbc:mysql://$dbServer:3306/$dbName", dbUser, dbPass)
       val result = dbq(new MySQLDataset(() => NamedDB(cpName), dbTableName))
@@ -30,7 +38,7 @@ object MySQLDataset {
   
 }
   
-class MySQLDataset private (db: () => NamedDB, dbTableName: String) { 
+class MySQLDataset(db: () => NamedDB, dbTableName: String) extends Dataset { 
   
   def fetchValuesBySelectAndColName(select: String, col: String) = db() readOnly (implicit session =>
     SQL.apply(s"SELECT DISTINCT $select FROM `$dbTableName`").map(_.stringOpt(col)).list.apply

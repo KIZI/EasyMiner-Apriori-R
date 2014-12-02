@@ -2,7 +2,9 @@ package cz.vse.easyminer.miner.impl
 
 import cz.vse.easyminer.miner.ANDOR
 import cz.vse.easyminer.miner.ARule
+import cz.vse.easyminer.miner.ARuleVisualizer
 import cz.vse.easyminer.miner.BoolExpression
+import cz.vse.easyminer.miner.BoolExpressionVisualizer
 import cz.vse.easyminer.miner.Confidence
 import cz.vse.easyminer.miner.Count
 import cz.vse.easyminer.miner.FixedValue
@@ -12,18 +14,16 @@ import cz.vse.easyminer.miner.Support
 import cz.vse.easyminer.miner.Value
 import cz.vse.easyminer.util.Template
 
-object PMMLResult {
+class PMMLResult {
   
-  private def baref(expr: BoolExpression[FixedValue]) = expr match {
-    case Value(_) => s"BBA${expr.hashCode}"
-    case _ => s"DBA${expr.hashCode}"
-  }
+  self: ARuleVisualizer with BoolExpressionVisualizer =>
   
   private val arulesToPMMLMapper : PartialFunction[ARule, Map[String, Any]] = {
     case ar @ ARule(ant, con, im, ct) => Map(
         "id" -> s"AR${ar.hashCode}",
         "id-antecedent" -> baref(ant),
         "id-consequent" -> baref(con),
+        "text" -> aruleToString(ar),
         "conf" -> im.collectFirst{case Confidence(conf) => conf},
         "supp" -> im.collectFirst{case Support(supp) => supp},
         "lift" -> im.collectFirst{case Lift(lift) => lift},
@@ -39,7 +39,7 @@ object PMMLResult {
   private val dbaToPMMLMapper = {
     def makeDbaMap(expr: BoolExpression[FixedValue], children: List[String]) = Map(
       "id" -> baref(expr),
-      "text" -> "",
+      "text" -> exprToString(expr),
       "barefs" -> children
     )
     val pf : PartialFunction[BoolExpression[FixedValue], Map[String, Any]] = {
@@ -52,10 +52,15 @@ object PMMLResult {
   private val bbaToPMMLMapper : PartialFunction[BoolExpression[FixedValue], Map[String, Any]] = {
     case e @ Value(x) => Map(
         "id" -> baref(e),
-        "text" -> "",
+        "text" -> exprToString(e),
         "name" -> x.name,
         "value" -> x.value
       )
+  }
+  
+  private def baref(expr: BoolExpression[FixedValue]) = expr match {
+    case Value(_) => s"BBA${expr.hashCode}"
+    case _ => s"DBA${expr.hashCode}"
   }
   
   private def collectExpression(be: BoolExpression[FixedValue]) : Set[BoolExpression[FixedValue]] = be match {
@@ -64,18 +69,15 @@ object PMMLResult {
     case _ => Set(be)
   }
   
-  private def getDBAs(ant: Set[BoolExpression[FixedValue]], con: Set[BoolExpression[FixedValue]]) = {
-//    getAllExpr(x.)
-//    
-//    
-  }
-  
   def toPMML(arules: Seq[ARule]) = {
-    val a = arules.flatMap(x => Seq(x.antecedent, x.consequent)).map(collectExpression).reduce(_ ++ _)
+    val exprs = arules.flatMap(x => Seq(x.antecedent, x.consequent)).map(collectExpression).reduceOption(_ ++ _)
     Template.apply(
       "PMMLResult.template.mustache",
       Map(
-        "arules" -> arules.collect(arulesToPMMLMapper)
+        "arules" -> arules.collect(arulesToPMMLMapper),
+        "dbas" -> exprs.getOrElse(Nil).collect(dbaToPMMLMapper),
+        "bbas" -> exprs.getOrElse(Nil).collect(bbaToPMMLMapper),
+        "number-of-rules" -> arules.size
       )
     )
   }

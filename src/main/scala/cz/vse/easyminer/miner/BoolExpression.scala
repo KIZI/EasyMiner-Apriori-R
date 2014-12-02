@@ -26,3 +26,7 @@ object ANDORNOT {
     case _ => true
   }
 }
+
+trait BoolExpressionVisualizer {
+  def exprToString[T](expr: BoolExpression[T]) : String
+}

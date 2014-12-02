@@ -6,3 +6,7 @@ case class ARule(
   interestMeasures: Set[InterestMeasure],
   contingencyTable: ContingencyTable
 )
+
+trait ARuleVisualizer {
+  def aruleToString(arule: ARule) : String
+}

@@ -4,12 +4,13 @@ import cz.vse.easyminer.miner.AND
 import cz.vse.easyminer.miner.AllValues
 import cz.vse.easyminer.miner.Attribute
 import cz.vse.easyminer.miner.BoolExpression
+import cz.vse.easyminer.miner.DatasetQueryBuilder
 import cz.vse.easyminer.miner.FixedValue
 import cz.vse.easyminer.miner.NOT
 import cz.vse.easyminer.miner.OR
 import cz.vse.easyminer.miner.Value
 
-object MySQLQueryBuilder {
+trait MySQLQueryBuilder extends DatasetQueryBuilder {
 
   private val ToSQLSelect : PartialFunction[(String, String), String] = {
     case(k, "") => k
