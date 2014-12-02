@@ -12,32 +12,43 @@ import cz.vse.easyminer.miner.impl.PMMLMySQL
 import cz.vse.easyminer.miner.impl.PMMLResult
 import cz.vse.easyminer.miner.impl.PMMLTask
 import spray.routing.Directives
-import spray.routing.ExceptionHandler
 import spray.routing.SimpleRoutingApp
-import spray.util.LoggingContext
 
-object Main extends App with SimpleRoutingApp {
-//  val _pmml = xml.XML.loadFile("input.pmml.xml")
-//  val task = new PMMLTask(_pmml)
-//  val process = new AprioriRProcess("RAprioriWithMySQL.mustache", "/home/venca/RWorks/mysql-jdbc", "192.168.137.128") with PMMLMySQL with MySQLDatasetBuilder with MySQLQueryBuilder {
-//    val pmml = _pmml 
+object Main extends App with SimpleRoutingApp with Aaa {
+//  implicit val system = ActorSystem("easyminer-rest-system")
+  
+//  val conn = new RConnection("192.168.137.128", 6311)
+//  println(conn.eval("rnorm(10)").asDoubles.toList)
+//  conn.close
+//
+//  println(Template.apply("RAprioriWithMySQL.mustache"))
+  val _pmml = xml.XML.loadFile("input.pmml.xml")
+  val task = new PMMLTask(_pmml)
+  val process = new AprioriRProcess("RAprioriWithMySQL.mustache", "/home/venca/RWorks/mysql-jdbc", "192.168.137.128") with PMMLMySQL with MySQLDatasetBuilder with MySQLQueryBuilder {
+    val pmml = _pmml 
+  }
+  val minertask = MinerTask(task.fetchAntecedent, task.fetchInterestMeasures, task.fetchConsequent)
+  println(minertask)
+  val result = process.mine(minertask)
+  println(result.size)
+  val pmmlresult = new PMMLResult with ARuleText with BoolExpressionText
+  println(pmmlresult.toPMML(result))
+  //println(.prepareDataset(aa => aa.fetchValuesByColName("author")))
+  
+//  startServer(interface = "89.177.166.161", port = 8080) {
+//    pathPrefix("api") {
+//      path("v1" ~ Slash.?) {
+//        my
+//      }
+//    }
 //  }
-//  val minertask = MinerTask(task.fetchAntecedent, task.fetchInterestMeasures, task.fetchConsequent)
-//  println(minertask)
-//  val result = process.mine(minertask)
-//  println(result.size)
-//  val pmmlresult = new PMMLResult with ARuleText with BoolExpressionText
-//  println(pmmlresult.toPMML(result))
-  implicit val system = ActorSystem("easyminer-rest-system") 
   
-  val v1Endpoint = new V1Endpoint with DefaultXmlHandlers
-  
-  startServer(interface = "127.0.0.1", port = 8080) {
-    pathPrefix("api") {
-      pathPrefix("v1") {
-        v1Endpoint.apply
-      }
+}
+
+trait Aaa extends Directives {
+  val my = get {
+    complete {
+      <a>aaa</a>
     }
   }
-  
 }

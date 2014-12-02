@@ -19,7 +19,6 @@ libraryDependencies ++= {
     "io.spray"            %%  "spray-can"     % sprayV,
     "io.spray"            %%  "spray-routing" % sprayV,
     "com.typesafe.akka"   %%  "akka-actor"    % akkaV,
-    "com.typesafe.akka"   %%  "akka-slf4j"    % akkaV,
     "org.nuiton.thirdparty" % "REngine" % "1.7-3",
     "org.nuiton.thirdparty" % "Rserve" % "1.7-3",
     "org.scalatra.scalate" %% "scalate-core" % "1.7.0",
