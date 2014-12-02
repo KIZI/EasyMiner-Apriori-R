@@ -4,6 +4,7 @@
 /project/project/
 /project/target/
 /target/
+/private/
 
 activator
 activator-launch-1.2.10.jar

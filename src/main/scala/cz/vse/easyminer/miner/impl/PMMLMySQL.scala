@@ -6,7 +6,7 @@ trait PMMLMySQL {
 
   val pmml: scala.xml.Elem
   
-  val (dbServer, dbName, dbUser, dbPass, dbTableName) = {
+  lazy val (dbServer, dbName, dbUser, dbPass, dbTableName) = {
     val extensions = (pmml \ "Header" \ "Extension").map(ext =>
       (ext \ "@name").text -> (ext \ "@value").text
     ).toMap

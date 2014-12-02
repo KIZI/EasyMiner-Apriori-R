@@ -6,4 +6,3 @@ case class ARule(
   interestMeasures: Set[InterestMeasure],
   contingencyTable: ContingencyTable
 )
-

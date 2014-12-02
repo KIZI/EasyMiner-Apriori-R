@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PMML version="4.0" xmlns="http://www.dmg.org/PMML-4_0" 
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+      xmlns:pmml="http://www.dmg.org/PMML-4_0"
+      xsi:schemaLocation="http://www.dmg.org/PMML-4_0 http://sewebar.vse.cz/schemas/PMML4.0+GUHA0.1.xsd"
+>
+
+    <guha:AssociationModel  xmlns="" xsi:schemaLocation="http://keg.vse.cz/ns/GUHA0.1rev1 http://sewebar.vse.cz/schemas/GUHA0.1rev1.xsd"
+                            xmlns:guha="http://keg.vse.cz/ns/GUHA0.1rev1"
+                            modelName="c402d7406a440a39029c9296fe105eba" 
+                            functionName="associationRules" 
+                            algorithmName="Apriori" 
+                            numberOfTransactions="0" 
+                            numberOfCategories="0" 
+                            numberOfRules="{{numberOfRules}}"
+    >
+        
+        <AssociationRules>
+            
+            {{#bbas}}
+            <BBA id="{{id}}" literal="false">
+                <Text>{{text}}</Text>
+                <FieldRef>{{name}}</FieldRef>
+                <CatRef>{{value}}</CatRef>
+            </BBA>
+            {{/bbas}}
+            
+            {{#dbas}}
+            <DBA id="{{id}}" connective="Conjunction" literal="true">
+                <Text>{{text}}</Text>
+                {{#barefs}}
+                <BARef>{{_}}</BARef>
+                {{/barefs}}
+            </DBA>
+            {{/dbas}}
+            
+            {{#arules}}
+            <AssociationRule id="{{id}}"
+                             antecedent="{{id-antecedent}}"
+                             consequent="{{id-consequent}}"
+            >
+                <Text>{{text}}</Text>
+                <IMValue name="FUI" type="Abs">{{conf}}</IMValue>
+                <IMValue name="SUPP" type="Abs">{{supp}}</IMValue>
+                <IMValue name="a">{{a}}</IMValue>
+                <IMValue name="b">{{b}}</IMValue>
+                <IMValue name="c">{{c}}</IMValue>
+                <IMValue name="d">{{d}}</IMValue>
+                <IMValue name="r">{{r}}</IMValue>
+                <IMValue name="n">{{n}}</IMValue>
+                <IMValue name="Conf">{{conf}}</IMValue>
+                <IMValue name="Supp">{{supp}}</IMValue>
+                <IMValue name="AvgDf">{{lift}}</IMValue>
+                <FourFtTable a="{{a}}" b="{{b}}" c="{{c}}" d="{{d}}"/>
+            </AssociationRule>
+            {{/arules}}
+        </AssociationRules>
+
+</PMML> 
