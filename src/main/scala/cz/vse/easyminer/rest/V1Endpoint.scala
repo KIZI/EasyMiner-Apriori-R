@@ -6,7 +6,6 @@ import akka.util.Timeout
 import cz.vse.easyminer.util.RestUtils
 import java.util.Date
 import java.util.UUID
-import scala.util.Failure
 import scala.util.Success
 import scala.xml.NodeSeq
 import spray.http.HttpHeaders.RawHeader
@@ -58,7 +57,7 @@ class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
       case Success(ActorIdentity(_, Some(minerActor))) => {
           import MinerControllerActor._
           val resReq = minerActor ? Sent.ResultRequest
-          Await.result(resReq, 10 seconds) match {
+          Await.result(resReq, 30 seconds) match {
             case Reply.Result(pmml) => complete(pmml)
             case Reply.Error(th) => throw th
             case _ => complete(

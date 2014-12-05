@@ -16,7 +16,7 @@ class MinerControllerActor(id: String) extends Actor with FSM[MinerControllerAct
   val child = context.actorOf(Props[MinerActor], name = "miner")
   val logger = LoggerFactory.getLogger("MinerControllerActor")
   
-  context.setReceiveTimeout(2 minutes)
+  setTimer("timeout", ReceiveTimeout, 2 minutes, false)
   
   startWith(State.Waiting, Data.NoData)
   
