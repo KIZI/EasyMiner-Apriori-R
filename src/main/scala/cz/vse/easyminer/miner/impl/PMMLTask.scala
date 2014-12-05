@@ -14,7 +14,7 @@ import cz.vse.easyminer.util.AnyToInt
 import cz.vse.easyminer.util.Lift
 import scalikejdbc._
 
-class PMMLTask(pmml: scala.xml.Elem) {
+class PMMLTask(pmml: xml.Node) {
   
   private val boolExpElemName = "DBASetting"
   private val attrElemName = "BBASetting"

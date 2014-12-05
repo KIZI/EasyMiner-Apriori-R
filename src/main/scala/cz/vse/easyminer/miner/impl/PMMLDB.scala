@@ -2,7 +2,7 @@ package cz.vse.easyminer.miner.impl
 
 trait PMMLDB {
 
-  val pmml: scala.xml.Elem
+  val pmml: xml.Node
   val dbServer : String
   val dbName : String
   val dbUser : String
