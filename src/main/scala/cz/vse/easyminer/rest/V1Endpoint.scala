@@ -3,12 +3,16 @@ package cz.vse.easyminer.rest
 import akka.actor.ActorIdentity
 import akka.actor.ActorRefFactory
 import akka.util.Timeout
-import cz.vse.easyminer.util.RestUtils
+import cz.vse.easyminer.util.RestUtils.PathExtension
 import java.util.Date
 import java.util.UUID
 import scala.util.Success
 import scala.xml.NodeSeq
+import spray.http.ContentType
+import spray.http.HttpEntity
+import spray.http.HttpHeaders
 import spray.http.HttpHeaders.RawHeader
+import spray.http.MediaTypes
 import spray.http.StatusCodes
 import spray.routing.Directives
 import scala.concurrent.Await
@@ -21,18 +25,17 @@ class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
   
   self: DefaulHandlers =>
   
-  implicit val timeout = Timeout(10 seconds)
-  implicit val dispatcher = af.dispatcher
+  private implicit val timeout = Timeout(10 seconds)
+  private implicit val dispatcher = af.dispatcher
   
-  def idMinerPrefix = "miner-"
+  private def idMinerPrefix = "miner-"
   
-  def sendPmml(pmml: NodeSeq) = {
+  private def sendPmml(pmml: NodeSeq) = {
     import MinerControllerActor._
     val id = UUID.randomUUID.toString
     val minerActor = af.actorOf(MinerControllerActor.props(idMinerPrefix + id), idMinerPrefix + id)
     minerActor ! Sent.Task(pmml)
     requestUri { uri => {
-        import RestUtils.PathExtension._
         val rurl = uri.path.parent.toString + "/result/" + id
         respondWithHeader(RawHeader("Location", rurl)) {
           complete(
@@ -51,14 +54,15 @@ class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
     }
   }
   
-  def receiveResult(id: UUID) = {
+  private def receiveResult(id: UUID) = {
     val actorExists = af.actorSelection("/user/" + idMinerPrefix + id.toString) ? Identify(1)
     Await.ready(actorExists, 10 seconds).value.get match {
       case Success(ActorIdentity(_, Some(minerActor))) => {
           import MinerControllerActor._
+          import MediaTypes._
           val resReq = minerActor ? Sent.ResultRequest
           Await.result(resReq, 30 seconds) match {
-            case Reply.Result(pmml) => complete(pmml)
+            case Reply.Result(pmml) => complete(HttpEntity.apply(ContentType(`application/xml`), pmml))
             case Reply.Error(th) => throw th
             case _ => complete(
                 StatusCodes.Accepted,
@@ -75,7 +79,7 @@ class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
     }
   }
   
-  def apply = handleDefault {
+  def endpoint = handleDefault {
     path("mine" ~ Slash.?) {
       post {
         requestEntityPresent {

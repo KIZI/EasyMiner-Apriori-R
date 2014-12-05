@@ -14,7 +14,7 @@ import cz.vse.easyminer.miner.Support
 import cz.vse.easyminer.miner.Value
 import cz.vse.easyminer.util.Template
 
-class PMMLResult {
+class PMMLResult(arules: Seq[ARule]) {
   
   self: ARuleVisualizer with BoolExpressionVisualizer =>
   
@@ -69,7 +69,7 @@ class PMMLResult {
     case _ => Set(be)
   }
   
-  def toPMML(arules: Seq[ARule]) = {
+  def toPMML = {
     val exprs = arules.flatMap(x => Seq(x.antecedent, x.consequent)).map(collectExpression).reduceOption(_ ++ _)
     Template.apply(
       "PMMLResult.template.mustache",
@@ -79,7 +79,7 @@ class PMMLResult {
         "bbas" -> exprs.getOrElse(Nil).collect(bbaToPMMLMapper),
         "number-of-rules" -> arules.size
       )
-    )
+    ).trim
   }
   
 }

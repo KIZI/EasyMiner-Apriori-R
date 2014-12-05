@@ -18,8 +18,10 @@ import cz.vse.easyminer.miner.Value
 import cz.vse.easyminer.util.AnyToDouble
 import cz.vse.easyminer.util.Template
 import org.rosuda.REngine.Rserve.RConnection
+import org.slf4j.LoggerFactory
 
 class AprioriRProcess(
+  val pmml: xml.Node,
   rTemplate: String,
   jdbcDriverAbsolutePath: String,
   rServer: String,
@@ -32,6 +34,7 @@ class AprioriRProcess(
   
   val defaultSupport = 0.001
   val defaultConfidence = 0.2
+  val logger = LoggerFactory.getLogger("cz.vse.easyminer.miner.impl.AprioriRProcess")
   
   object RAruleToBoolExpression {
     def unapply(str: String) = str
@@ -69,12 +72,17 @@ class AprioriRProcess(
   
   def mine(mt: MinerTask) = executeQueries(implicit db => {
       import cz.vse.easyminer.util.BasicFunction._
+      logger.debug(s"New task was received: $mt")
       val im = mt.interestMeasures.foldLeft(Map("confidence" -> defaultConfidence, "support" -> defaultSupport)) {
         case (m, Confidence(x)) => m + ("confidence" -> x)
         case (m, Support(x)) => m + ("support" -> x)
         case (m, Lift(x)) => m + ("lift" -> x)
         case (m, _) => m
       }
+      val inputSelectQuery = getInputSelectQuery(mt.antecedent OR mt.consequent)
+      val inputConsequentValues = getInputRValues(mt.consequent)
+      logger.debug("Itemsets will be filtered by this SQL Select query: " + inputSelectQuery)
+      logger.debug("Consequent values are: " + inputConsequentValues)
       val rscript = Template(
         rTemplate,
         Map(
@@ -84,12 +92,15 @@ class AprioriRProcess(
           "dbUser" -> dbUser,
           "dbPassword" -> dbPass,
           "dbTableName" -> dbTableName,
-          "selectQuery" -> getInputSelectQuery(mt.antecedent OR mt.consequent),
-          "consequent" -> getInputRValues(mt.consequent)
+          "selectQuery" -> inputSelectQuery,
+          "consequent" -> inputConsequentValues
         ) ++ im
       )
+      logger.trace("This Rscript will be passed to the Rserve:\n" + rscript)
       val count = Count(db.fetchCount)
-      evalRScript(rscript).collect(getOutputARuleMapper(count)).toSeq
+      val result = evalRScript(rscript).collect(getOutputARuleMapper(count)).toSeq
+      logger.debug(s"Number of found association rules: ${result.size}")
+      result
     }
   )
   

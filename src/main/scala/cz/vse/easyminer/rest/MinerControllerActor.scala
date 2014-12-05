@@ -14,7 +14,7 @@ class MinerControllerActor(id: String) extends Actor with FSM[MinerControllerAct
   import MinerControllerActor._
   
   val child = context.actorOf(Props[MinerActor], name = "miner")
-  val logger = LoggerFactory.getLogger("MinerControllerActor")
+  val logger = LoggerFactory.getLogger("cz.vse.easyminer.rest.MinerControllerActor")
   
   setTimer("timeout", ReceiveTimeout, 2 minutes, false)
   
@@ -74,14 +74,14 @@ object MinerControllerActor {
   sealed trait Reply
   object Reply {
     object InProgress extends Reply
-    case class Result(pmml: NodeSeq) extends Reply
+    case class Result(pmml: String) extends Reply
     case class Error(th: Throwable) extends Reply
   }
   
   sealed trait Sent
   object Sent {
     case class Task(pmml: NodeSeq) extends Sent
-    case class Result(pmml: xml.Elem) extends Sent
+    case class Result(pmml: String) extends Sent
     case class Error(th: Throwable) extends Sent
     object ResultRequest extends Sent
   }
@@ -97,7 +97,7 @@ object MinerControllerActor {
   object Data {
     object NoData extends Data
     case class Error(ex: Throwable) extends Data
-    case class Result(pmml: xml.Elem) extends Data
+    case class Result(pmml: String) extends Data
   }
   
 }

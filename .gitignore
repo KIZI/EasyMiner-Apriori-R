@@ -13,3 +13,4 @@ activator.bat
 input.pmml.xml
 LICENSE
 output.pmml.xml
+project/private.sbt
