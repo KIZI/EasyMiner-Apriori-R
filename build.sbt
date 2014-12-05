@@ -1,3 +1,6 @@
+import com.github.retronym.SbtOneJar._
+import ScalateKeys._
+
 name := "easyminer-apriori-r"
 
 version := "1.0"
@@ -5,6 +8,8 @@ version := "1.0"
 scalaVersion := "2.10.4"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature")
+
+exportJars := true
 
 libraryDependencies ++= {
   val akkaV = "2.3.6"
@@ -22,5 +27,20 @@ libraryDependencies ++= {
     "mysql" % "mysql-connector-java" % "5.1.33",
     "org.scalikejdbc" %% "scalikejdbc"       % "2.2.0",
     "com.github.kxbmap" %% "configs" % "0.2.2"
+  )
+}
+
+oneJarSettings
+
+seq(scalateSettings:_*)
+
+scalateTemplateConfig in Compile <<= (sourceDirectory in Compile){ base =>
+  Seq(
+    TemplateConfig(
+      base / "resources",
+      Nil,
+      Nil,
+      Some("")
+    )
   )
 }
