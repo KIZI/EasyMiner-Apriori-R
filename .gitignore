@@ -5,9 +5,6 @@
 /project/target/
 /target/
 /private/
-/webapp/lib
-/webapp/swagger-ui.js
-/webapp/swagger-ui.min.js
 
 activator
 activator-launch-1.2.10.jar
