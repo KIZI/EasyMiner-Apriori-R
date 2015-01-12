@@ -5,11 +5,11 @@ import cz.vse.easyminer.util.Conf
 import spray.routing.SimpleRoutingApp
 
 object Main extends App with SimpleRoutingApp {
- 
-  implicit val system = ActorSystem("easyminer-rest-system") 
+
+  implicit val system = ActorSystem("easyminer-rest-system")
 
   val v1Endpoint = new V1Endpoint with DefaultXmlHandlers
-  
+
   startServer(interface = Conf().get[String]("rest.address"), port = Conf().get[Int]("rest.port")) {
     pathPrefix("api") {
       pathPrefix("v1") {
@@ -17,5 +17,5 @@ object Main extends App with SimpleRoutingApp {
       }
     }
   }
-  
+
 }
