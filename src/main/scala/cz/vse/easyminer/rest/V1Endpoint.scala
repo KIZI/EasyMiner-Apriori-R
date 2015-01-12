@@ -25,7 +25,7 @@ import MediaTypes._
 
 class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
 
-  self: DefaulHandlers =>
+  self: DefaulHandlers with EndpointDoc =>
 
   private implicit val timeout = Timeout(10 seconds)
   private implicit val dispatcher = af.dispatcher
@@ -95,17 +95,7 @@ class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
         get {
           receiveResult(id)
         }
-    } ~ pathSingleSlash {
-      getFromFile("webapp/index.html")
-    } ~ pathEnd {
-      requestUri { uri =>
-        redirect(uri.withPath(uri.path / ""), StatusCodes.PermanentRedirect)
-      }
-    } ~ path("swagger-doc.json") {
-      requestUri { uri =>
-        complete(HttpEntity.apply(ContentType(`application/json`), Template.apply("swagger-doc.json.mustache", Map("host" -> s"${uri.authority.host}:${uri.authority.port}"))))
-      }
-    } ~ getFromDirectory("webapp")
+    } ~ attachDoc(uri => Template.apply("swagger-doc.json.mustache", Map("host" -> s"${uri.authority.host}:${uri.authority.port}")))
   }
 
 }
