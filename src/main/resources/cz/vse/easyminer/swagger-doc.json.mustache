@@ -35,6 +35,9 @@
             "responses":{
                "202":{
                   "description":"Task was accepted and is in progress.",
+                  "schema": {  
+                     "$ref": "#/definitions/Status"
+                  },
                   "headers":[
                      {
                         "type":"string",
@@ -43,7 +46,10 @@
                   ]
                },
                "500":{
-                  "description":"Bad input data or the task was not created."
+                  "description":"Bad input data or the task was not created.",
+                  "schema": {  
+                     "$ref": "#/definitions/Error"
+                  }
                }
             }
          }
@@ -58,25 +64,97 @@
                {
                   "name":"taskId",
                   "in":"path",
-                  "description":"ID task",
+                  "description":"task ID",
                   "required":true,
                   "type":"string"
                }
             ],
             "responses":{
                "202":{
-                  "description":"Task is still in progress."
+                  "description":"Task is still in progress.",
+                  "schema": {  
+                     "$ref": "#/definitions/Status"
+                  }
                },
                "200":{
-                  "description":"Task has been finished. It returns the result PMML."
+                  "description":"Task has been finished. It returns the PMML result."
                },
                "404":{
-                  "description":"Task is not exist or has been picked up."
+                  "description":"Task is not exist or has been picked up.",
+                  "schema": {  
+                     "$ref": "#/definitions/Error"
+                  }
                },
                "500":{
-                  "description":"Some error during mining."
+                  "description":"Some error during mining.",
+                  "schema": {  
+                     "$ref": "#/definitions/Error"
+                  }
                }
             }
+         }
+      }
+   },
+   "definitions": {
+      "Status": {
+         "required":[  
+            "code",
+            "miner"
+         ],
+         "properties": {
+            "code": {
+               "type": "string"
+            },
+            "miner": {
+               "$ref":"MinerState"
+            }
+         },
+         "xml": {
+            "name": "Status"
+         }
+      },
+      "MinerState": {
+         "required":[  
+            "state",
+            "task-id"
+         ],
+         "properties": {
+            "state": {
+               "type": "string"
+            },
+            "task-id": {
+               "type": "string"
+            },
+            "started": {
+               "type": "string"
+            },
+            "result-url": {
+               "type": "string"
+            }
+         },
+         "xml": {
+            "name": "MinerState"
+         }
+      },
+      "Error": {
+         "required":[  
+            "code",
+            "name",
+            "message"
+         ],
+         "properties": {
+            "code": {
+               "type": "integer"
+            },
+            "name": {
+               "type": "string"
+            },
+            "message": {
+               "type": "string"
+            }
+         },
+         "xml": {
+            "name": "Error"
          }
       }
    }

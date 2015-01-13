@@ -47,6 +47,7 @@ class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
               <code>202 Accepted</code>
               <miner>
                 <state>In progress</state>
+                <task-id>{ id }</task-id>
                 <started>{ new Date }</started>
                 <result-url>{ rurl }</result-url>
               </miner>
@@ -72,6 +73,7 @@ class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
               <code>202 Accepted</code>
               <miner>
                 <state>In progress</state>
+                <task-id>{ id }</task-id>
               </miner>
             </status>
           )
