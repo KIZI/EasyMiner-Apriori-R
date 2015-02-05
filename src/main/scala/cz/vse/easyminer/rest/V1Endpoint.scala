@@ -10,6 +10,7 @@ import java.util.UUID
 import scala.util.Success
 import scala.xml.NodeSeq
 import spray.http.ContentType
+import spray.http.HttpCharsets
 import spray.http.HttpEntity
 import spray.http.HttpHeaders
 import spray.http.HttpHeaders.RawHeader
@@ -65,7 +66,7 @@ class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
         import MinerControllerActor._
         val resReq = minerActor ? Sent.ResultRequest
         Await.result(resReq, 30 seconds) match {
-          case Reply.Result(pmml) => complete(HttpEntity.apply(ContentType(`application/xml`), pmml))
+          case Reply.Result(pmml) => complete(HttpEntity.apply(ContentType(`application/xml`, HttpCharsets.`UTF-8`), pmml))
           case Reply.Error(th) => throw th
           case _ => complete(
             StatusCodes.Accepted,
@@ -97,7 +98,11 @@ class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
         get {
           receiveResult(id)
         }
-    } ~ attachDoc(uri => Template.apply("swagger-doc.json.mustache", Map("host" -> s"${uri.authority.host}:${uri.authority.port}")))
+    } ~ attachDoc {
+      uri =>
+        val host = uri.authority.host + (if (uri.authority.port == 0) "" else ":" + uri.authority.port.toString)
+        Template.apply("swagger-doc.json.mustache", Map("host" -> host))
+    }
   }
 
 }
