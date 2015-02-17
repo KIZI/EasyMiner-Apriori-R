@@ -15,13 +15,13 @@ library(arules)
 
 # load data from mysql
 drv <- JDBC("com.mysql.jdbc.Driver", list.files("{{jdbcDriverAbsolutePath}}", pattern="jar$",full.names=T))
-con<- dbConnect(drv, "jdbc:mysql://{{{dbServer}}}:3306/{{{dbName}}}", "{{{dbUser}}}", "{{{dbPassword}}}")
+con <- dbConnect(drv, "jdbc:mysql://{{{dbServer}}}:3306/{{{dbName}}}?characterEncoding=utf8", "{{{dbUser}}}", "{{{dbPassword}}}")
 train <- dbGetQuery(con, "SELECT {{{selectQuery}}} FROM {{{dbTableName}}}")
 dbDisconnect(con)
 
 # normalize data
 train <- sapply(train,as.factor)
-train <- data.frame(train)
+train <- data.frame(train, check.names=F)
 
 # arules processing
 txns <- as(train,"transactions")
