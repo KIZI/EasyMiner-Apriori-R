@@ -26,7 +26,9 @@ libraryDependencies ++= {
     "org.slf4j" % "slf4j-simple" % "1.7.7",
     "mysql" % "mysql-connector-java" % "5.1.33",
     "org.scalikejdbc" %% "scalikejdbc"       % "2.2.0",
-    "com.github.kxbmap" %% "configs" % "0.2.2"
+    "com.github.kxbmap" %% "configs" % "0.2.2",
+    "org.scalatest" %% "scalatest" % "2.2.4" % "test",
+    "io.spray" %% "spray-testkit" % sprayV % "test"
   )
 }
 

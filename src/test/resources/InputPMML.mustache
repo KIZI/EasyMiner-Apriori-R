@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen SCHSchema="http://sewebar.vse.cz/schemas/GUHARestr0_1.sch"?>
+<PMML xmlns="http://www.dmg.org/PMML-4_0" version="4.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pmml="http://www.dmg.org/PMML-4_0"
+    xsi:schemaLocation="http://www.dmg.org/PMML-4_0 http://sewebar.vse.cz/schemas/PMML4.0+GUHA0.1.xsd">
+    <Header copyright="Copyright (c) KIZI UEP"><!--XX:Hlavička je tu zas jen aby se neřeklo (údaje v ní neodpovídají skutečnosti)-->
+        <Extension name="dataset" value="{{dbtable}}"/>
+        <Extension name="author" value="admin"/>
+        <Extension name="subsystem" value="4ft-Miner"/>
+        <Extension name="module" value="4ftResult.exe"/>
+        <Extension name="format" value="4ftMiner.Task"/>
+		<Extension name="database-type" value="mysql"/>
+        <Extension name="database-server" value="{{dbserver}}"/>
+        <Extension name="database-name" value="{{dbname}}"/>
+        <Extension name="database-user" value="{{dbuser}}"/>
+        <Extension name="database-password" value="{{dbpassword}}"/>
+        <Application name="SEWEBAR-CMS" version="0.00.01 24.09.2014"/>
+        <Annotation/>
+        <Timestamp>24.09.2014 13:58:28</Timestamp>
+    </Header>
+    <DataDictionary/> <!--XX: Nevím, proč tu zůstal element DataDictionary, ale rozhodně v něm nikdy nic není -->
+    <guha:AssociationModel xmlns:guha="http://keg.vse.cz/ns/GUHA0.1rev1" xmlns="" xsi:schemaLocation="http://keg.vse.cz/ns/GUHA0.1rev1 http://sewebar.vse.cz/schemas/GUHA0.1rev1.xsd" modelName="f54684f92035a48c6807cae7371b1fa3" functionName="associationRules" algorithmName="4ft">
+      <TaskSetting>
+         <Extension name="LISp-Miner">
+            <HypothesesCountMax>100</HypothesesCountMax>
+         </Extension>
+         <Extension name="metabase" value="LM Barbora.mdb MB" />
+         <BBASettings>
+            <BBASetting id="4">
+               <Text>Stát</Text>
+               <Name>Stát</Name>
+               <FieldRef>Stát</FieldRef>
+               <Coefficient>
+                  <!--<Type>One category</Type>
+                  <Category>United_States</Category>-->
+				  <Type>Subset</Type>
+                  <MinimalLength>1</MinimalLength>
+                  <MaximalLength>1</MaximalLength>
+               </Coefficient>
+            </BBASetting>
+			<BBASetting id="99">
+               <Text>Jméno člověka</Text>
+               <Name>Jméno člověka</Name>
+               <FieldRef>Jméno člověka</FieldRef>
+               <Coefficient>
+                  <Type>Subset</Type>
+                  <MinimalLength>1</MinimalLength>
+                  <MaximalLength>1</MaximalLength>
+               </Coefficient>
+            </BBASetting>
+            <BBASetting id="7">
+               <Text>Cizí jazyk</Text>
+               <Name>Cizí jazyk</Name>
+               <FieldRef>Cizí jazyk</FieldRef>
+               <Coefficient>
+                  <Type>Subset</Type>
+                  <MinimalLength>1</MinimalLength>
+                  <MaximalLength>1</MaximalLength>
+               </Coefficient>
+            </BBASetting>
+			<BBASetting id="88">
+               <Text>Pohlaví</Text>
+               <Name>Pohlaví</Name>
+               <FieldRef>Pohlaví</FieldRef>
+               <Coefficient>
+                  <Type>Subset</Type>
+                  <MinimalLength>1</MinimalLength>
+                  <MaximalLength>1</MaximalLength>
+               </Coefficient>
+            </BBASetting>
+            <BBASetting id="13">
+               <Text>Výsledek</Text>
+               <Name>Výsledek</Name>
+               <FieldRef>Výsledek</FieldRef>
+               <Coefficient>
+                  <Type>Subset</Type>
+                  <MinimalLength>1</MinimalLength>
+                  <MaximalLength>1</MaximalLength>
+               </Coefficient>
+            </BBASetting>
+            <BBASetting id="15">
+               <Text>Výsledek</Text>
+               <Name>Výsledek</Name>
+               <FieldRef>Výsledek</FieldRef>
+               <Coefficient>
+                  <Type>One category</Type>
+                  <Category>První</Category>
+               </Coefficient>
+            </BBASetting>
+            <BBASetting id="17">
+               <Text>Výsledek</Text>
+               <Name>Výsledek</Name>
+               <FieldRef>Výsledek</FieldRef>
+               <Coefficient>
+                  <Type>One category</Type>
+                  <Category>Střední</Category>
+               </Coefficient>
+            </BBASetting>
+         </BBASettings>
+         <DBASettings>
+            <DBASetting id="1" type="Conjunction">
+               <BASettingRef>3</BASettingRef>
+			   <BASettingRef>999</BASettingRef>
+			   <BASettingRef>77</BASettingRef>
+			   <BASettingRef>888</BASettingRef>
+               <!--<BASettingRef>5</BASettingRef>
+			   <BASettingRef>5</BASettingRef>-->
+               <MinimalLength>1</MinimalLength>
+            </DBASetting>
+            <DBASetting id="2" type="Conjunction">
+               <BASettingRef>3</BASettingRef>
+               <MinimalLength>0</MinimalLength>
+            </DBASetting>
+            <DBASetting id="3" type="Literal">
+               <BASettingRef>4</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+			<DBASetting id="999" type="Literal">
+               <BASettingRef>99</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+			<DBASetting id="77" type="Literal">
+               <BASettingRef>7</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+			<DBASetting id="888" type="Literal">
+               <BASettingRef>88</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+            <DBASetting id="5" type="Conjunction">
+               <BASettingRef>6</BASettingRef>
+			   <BASettingRef>2</BASettingRef>
+               <MinimalLength>0</MinimalLength>
+            </DBASetting>
+            <DBASetting id="6" type="Literal">
+               <BASettingRef>99</BASettingRef>
+               <LiteralSign>Negative</LiteralSign>
+            </DBASetting>
+            <DBASetting id="10" type="Conjunction">
+               <BASettingRef>16</BASettingRef>
+               <MinimalLength>1</MinimalLength>
+            </DBASetting>
+            <DBASetting id="11" type="Disjunction">
+               <BASettingRef>14</BASettingRef>
+               <BASettingRef>16</BASettingRef>
+               <MinimalLength>0</MinimalLength>
+            </DBASetting>
+            <DBASetting id="12" type="Literal">
+               <BASettingRef>13</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+            <DBASetting id="14" type="Literal">
+               <BASettingRef>15</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+            <DBASetting id="16" type="Literal">
+               <BASettingRef>17</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+         </DBASettings>
+         <AntecedentSetting>1</AntecedentSetting>
+         <ConsequentSetting>10</ConsequentSetting>
+         <InterestMeasureSetting>
+            <InterestMeasureThreshold id="8">
+               <InterestMeasure>FUI</InterestMeasure>
+               <Threshold>0.6</Threshold>
+               <ThresholdType>% of all</ThresholdType>
+               <CompareType>Greater than or equal</CompareType>
+            </InterestMeasureThreshold>
+            <InterestMeasureThreshold id="9">
+               <InterestMeasure>SUPP</InterestMeasure>
+               <Threshold>0.01</Threshold>
+               <ThresholdType>% of all</ThresholdType>
+               <CompareType>Greater than or equal</CompareType>
+            </InterestMeasureThreshold>
+         </InterestMeasureSetting>
+      </TaskSetting>
+      <AssociationRules />
+   </guha:AssociationModel>
+</PMML>
