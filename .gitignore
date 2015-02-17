@@ -5,6 +5,7 @@
 /project/target/
 /target/
 /private/
+/webapp/
 
 activator
 activator-launch-1.2.10.jar
