@@ -13,20 +13,20 @@ import cz.vse.easyminer.miner.FixedValue
 import cz.vse.easyminer.miner.Lift
 import cz.vse.easyminer.miner.MinerProcess
 import cz.vse.easyminer.miner.MinerTask
+import cz.vse.easyminer.miner.RScript
 import cz.vse.easyminer.miner.Support
 import cz.vse.easyminer.miner.Value
 import cz.vse.easyminer.util.AnyToDouble
 import cz.vse.easyminer.util.Template
-import org.rosuda.REngine.Rserve.RConnection
 import org.slf4j.LoggerFactory
 
 class AprioriRProcess(
   val pmml: xml.Node,
   rTemplate: String,
   jdbcDriverAbsolutePath: String,
-  rServer: String,
-  rPort: Int = 6311
-) extends MinerProcess {
+  val rServer: String,
+  val rPort: Int = 6311
+) extends MinerProcess with RScript {
   
   self: PMMLDB with DatasetBuilder with DatasetQueryBuilder =>
   
@@ -49,8 +49,6 @@ class AprioriRProcess(
   private def executeQueries[T]: (Dataset => T) => T = {
     buildAndExecute(dbServer, dbName, dbUser, dbPass, dbTableName) _
   }
-  
-  private def evalRScript(rscript: String) = tryCloseBool(new RConnection(rServer, rPort))(_.parseAndEval(rscript.trim.replaceAll("\r\n", "\n")).asStrings)
   
   private def getInputRValues(exp: BoolExpression[Attribute])(implicit db: Dataset) = toSQLSelectMap(exp)
   .flatMap{case (k, v) => db.fetchValuesBySelectAndColName(v, k) collect {case(Some(v)) => "\"" + s"$k=$v" + "\""}}
@@ -98,7 +96,7 @@ class AprioriRProcess(
       )
       logger.trace("This Rscript will be passed to the Rserve:\n" + rscript)
       val count = Count(db.fetchCount)
-      val result = evalRScript(rscript).collect(getOutputARuleMapper(count)).toSeq
+      val result = eval(rscript).collect(getOutputARuleMapper(count)).toSeq
       logger.debug(s"Number of found association rules: ${result.size}")
       result
     }

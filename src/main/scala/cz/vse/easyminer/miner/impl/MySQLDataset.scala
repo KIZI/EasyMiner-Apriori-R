@@ -28,7 +28,7 @@ trait MySQLDatasetBuilder extends DatasetBuilder {
   def buildAndExecute[T](dbServer: String, dbName: String, dbUser: String, dbPass: String, dbTableName: String)(dbq: Dataset => T) = {
     val cpName = MySQLDatasetBuilder.makeCpName
     try {
-      ConnectionPool.add(cpName, s"jdbc:mysql://$dbServer:3306/$dbName", dbUser, dbPass)
+      ConnectionPool.add(cpName, s"jdbc:mysql://$dbServer:3306/$dbName?characterEncoding=utf8", dbUser, dbPass)
       val result = dbq(new MySQLDataset(() => NamedDB(cpName), dbTableName))
       result
     } finally {

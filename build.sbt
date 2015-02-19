@@ -14,6 +14,7 @@ exportJars := true
 libraryDependencies ++= {
   val akkaV = "2.3.6"
   val sprayV = "1.3.2"
+  val scalikejdbcV = "2.2.0"
   Seq(
     "io.spray"            %%  "spray-can"     % sprayV,
     "io.spray"            %%  "spray-routing" % sprayV,
@@ -25,7 +26,7 @@ libraryDependencies ++= {
     "com.typesafe.scala-logging" %% "scala-logging-slf4j" % "2.1.2",
     "org.slf4j" % "slf4j-simple" % "1.7.7",
     "mysql" % "mysql-connector-java" % "5.1.33",
-    "org.scalikejdbc" %% "scalikejdbc"       % "2.2.0",
+    "org.scalikejdbc" %% "scalikejdbc"       % scalikejdbcV,
     "com.github.kxbmap" %% "configs" % "0.2.2",
     "org.scalatest" %% "scalatest" % "2.2.4" % "test",
     "io.spray" %% "spray-testkit" % sprayV % "test"
