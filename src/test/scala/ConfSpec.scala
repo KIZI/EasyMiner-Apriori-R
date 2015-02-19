@@ -57,14 +57,19 @@ class ConfSpec extends FlatSpec with Matchers with ConfOpt {
 
 trait ConfOpt {
 
-  val testconfig = new Conf(new EnrichTypesafeConfig(ConfigFactory.load("test")))
-  
+  import ConfOpt._
+
   def rserveAddress = Conf().get[String]("r-miner.rserve-address")
   def rservePort = Conf().get[Int]("r-miner.rserve-port")
   def dbserver = testconfig.get[String]("db.server")
   def dbuser = testconfig.get[String]("db.user")
   def dbpassword = testconfig.get[String]("db.password")
   def dbname = testconfig.get[String]("db.name")
-  def dbtable = testconfig.get[String]("db.table")
-  
+
+}
+
+object ConfOpt {
+
+  val testconfig = new Conf(new EnrichTypesafeConfig(ConfigFactory.load("test")))
+
 }

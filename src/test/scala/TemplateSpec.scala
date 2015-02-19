@@ -16,9 +16,9 @@ class TemplateSpec extends FlatSpec with TemplateOpt with Matchers {
 }
 
 trait TemplateOpt extends ConfOpt {
-  
+
   implicit val basePath = "/"
-  
+
   def inputpmml = XML.loadString(
     Template(
       "InputPMML.mustache",
@@ -27,9 +27,11 @@ trait TemplateOpt extends ConfOpt {
         "dbname" -> dbname,
         "dbuser" -> dbuser,
         "dbpassword" -> dbpassword,
-        "dbtable" -> dbtable
+        "dbtable" -> ""
       )
     )
   ).find(_.label == "PMML")
+
+  def datasetSql(tableName: String) = Template("dataset.sql.mustache", Map("tableName" -> tableName))
 
 }
