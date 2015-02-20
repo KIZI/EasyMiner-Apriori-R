@@ -9,8 +9,12 @@ class TemplateSpec extends FlatSpec with TemplateOpt with Matchers {
     Template.defaultBasePath should be("/cz/vse/easyminer/")
   }
 
-  it should "return template xml string by name" in {
-    inputpmml should be('defined)
+  it should "have XML Input string by name" in {
+    inputpmml("") should be('defined)
+  }
+
+  it should "have R script string by name" in {
+    rscript("", "", "", 0, 0) should not be empty
   }
 
 }
@@ -19,7 +23,7 @@ trait TemplateOpt extends ConfOpt {
 
   implicit val basePath = "/"
 
-  def inputpmml = XML.loadString(
+  def inputpmml(tableName: String) = XML.loadString(
     Template(
       "InputPMML.mustache",
       Map(
@@ -27,11 +31,27 @@ trait TemplateOpt extends ConfOpt {
         "dbname" -> dbname,
         "dbuser" -> dbuser,
         "dbpassword" -> dbpassword,
-        "dbtable" -> ""
+        "dbtable" -> tableName
       )
     )
   ).find(_.label == "PMML")
 
   def datasetSql(tableName: String) = Template("dataset.sql.mustache", Map("tableName" -> tableName))
+
+  def rscript(tableName: String, selectQuery: String, consequent: String, confidence: Double, support: Double) = Template(
+    "RAprioriWithMySQL.mustache",
+    Map(
+      "jdbcDriverAbsolutePath" -> jdbcdriver,
+      "dbServer" -> dbserver,
+      "dbName" -> dbname,
+      "dbUser" -> dbuser,
+      "dbPassword" -> dbpassword,
+      "dbTableName" -> tableName,
+      "selectQuery" -> selectQuery,
+      "consequent" -> consequent,
+      "confidence" -> confidence,
+      "support" -> support
+    )
+  )(Template.defaultBasePath)
 
 }

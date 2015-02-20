@@ -26,7 +26,7 @@ class ConfSpec extends FlatSpec with Matchers with ConfOpt {
   }
 
   it should "return string for jdbc-driver-dir-absolute-path" in {
-    Conf().get[String]("r-miner.jdbc-driver-dir-absolute-path") should not be empty
+    jdbcdriver should not be empty
   }
 
   it should "return int or exception Missing for r-miner.rserve-port" in {
@@ -59,6 +59,7 @@ trait ConfOpt {
 
   import ConfOpt._
 
+  def jdbcdriver = Conf().get[String]("r-miner.jdbc-driver-dir-absolute-path")
   def rserveAddress = Conf().get[String]("r-miner.rserve-address")
   def rservePort = Conf().get[Int]("r-miner.rserve-port")
   def dbserver = testconfig.get[String]("db.server")
