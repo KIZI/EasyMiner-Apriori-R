@@ -13,12 +13,12 @@ import cz.vse.easyminer.miner.Value
 trait MySQLQueryBuilder extends DatasetQueryBuilder {
 
   private val ToSQLSelect : PartialFunction[(String, String), String] = {
-    case(k, "") => k
+    case(k, "") => s"`$k`"
     case(k, v) => nameAndValueToIf(k, v)
   }
   
   private val ToSQLSelectMap : PartialFunction[(String, String), (String, String)] = {
-    case(k, "") => k -> k
+    case(k, "") => k -> s"`$k`"
     case(k, v) => k -> nameAndValueToIf(k, v)
   }
   

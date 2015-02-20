@@ -21,14 +21,13 @@ import cz.vse.easyminer.util.Template
 import org.slf4j.LoggerFactory
 
 class AprioriRProcess(
-  val pmml: xml.Node,
   rTemplate: String,
   jdbcDriverAbsolutePath: String,
   val rServer: String,
   val rPort: Int = 6311
 ) extends MinerProcess with RScript {
   
-  self: PMMLDB with DatasetBuilder with DatasetQueryBuilder =>
+  self: DBOpts with DatasetBuilder with DatasetQueryBuilder =>
   
   import cz.vse.easyminer.util.BasicFunction._
   

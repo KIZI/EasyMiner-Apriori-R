@@ -1,8 +1,7 @@
 package cz.vse.easyminer.miner.impl
 
-trait PMMLDB {
+trait DBOpts {
 
-  val pmml: xml.Node
   val dbServer : String
   val dbName : String
   val dbUser : String

@@ -6,9 +6,9 @@ import cz.vse.easyminer.miner.MinerTask
 import cz.vse.easyminer.miner.impl.ARuleText
 import cz.vse.easyminer.miner.impl.AprioriRProcess
 import cz.vse.easyminer.miner.impl.BoolExpressionText
+import cz.vse.easyminer.miner.impl.DBOptsPMML
 import cz.vse.easyminer.miner.impl.MySQLDatasetBuilder
 import cz.vse.easyminer.miner.impl.MySQLQueryBuilder
-import cz.vse.easyminer.miner.impl.PMMLMySQL
 import cz.vse.easyminer.miner.impl.PMMLResult
 import cz.vse.easyminer.miner.impl.PMMLTask
 import cz.vse.easyminer.util.Conf
@@ -27,16 +27,17 @@ class MinerActor extends Actor {
         logger.info(s"$path: mining start...")
         try {
           pmml.find(_.label == "PMML") match {
-            case Some(pmml) => {
-                logger.trace("PMML Input:\n" + pmml)
-                val task = new PMMLTask(pmml)
+            case Some(_pmml) => {
+                logger.trace("PMML Input:\n" + _pmml)
+                val task = new PMMLTask(_pmml)
                 val process = new AprioriRProcess(
-                  pmml,
                   "RAprioriWithMySQL.mustache",
                   Conf().get[String]("r-miner.jdbc-driver-dir-absolute-path"),
                   Conf().get[String]("r-miner.rserve-address"),
                   Conf().getOrElse[Int]("r-miner.rserve-port", 6311)
-                ) with PMMLMySQL with MySQLDatasetBuilder with MySQLQueryBuilder
+                ) with MySQLDatasetBuilder with MySQLQueryBuilder with DBOptsPMML {
+                  val pmml = _pmml
+                }
                 val minertask = MinerTask(task.fetchAntecedent, task.fetchInterestMeasures, task.fetchConsequent)
                 val result = process.mine(minertask)
                 val pmmlresult = (new PMMLResult(result) with ARuleText with BoolExpressionText).toPMML
