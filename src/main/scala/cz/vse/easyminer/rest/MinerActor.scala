@@ -5,6 +5,7 @@ import cz.vse.easyminer.miner.BadInputData
 import cz.vse.easyminer.miner.MinerTask
 import cz.vse.easyminer.miner.impl.ARuleText
 import cz.vse.easyminer.miner.impl.AprioriRProcess
+import cz.vse.easyminer.miner.impl.AttributeValueNormalizerImpl
 import cz.vse.easyminer.miner.impl.BoolExpressionText
 import cz.vse.easyminer.miner.impl.DBOptsPMML
 import cz.vse.easyminer.miner.impl.MySQLDatasetBuilder
@@ -29,7 +30,7 @@ class MinerActor extends Actor {
           pmml.find(_.label == "PMML") match {
             case Some(_pmml) => {
                 logger.trace("PMML Input:\n" + _pmml)
-                val task = new PMMLTask(_pmml)
+                val task = new PMMLTask(_pmml) with AttributeValueNormalizerImpl
                 val process = new AprioriRProcess(
                   "RAprioriWithMySQL.mustache",
                   Conf().get[String]("r-miner.jdbc-driver-dir-absolute-path"),
