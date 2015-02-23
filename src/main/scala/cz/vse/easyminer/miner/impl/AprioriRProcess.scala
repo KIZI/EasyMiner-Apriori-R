@@ -11,6 +11,7 @@ import cz.vse.easyminer.miner.DatasetBuilder
 import cz.vse.easyminer.miner.DatasetQueryBuilder
 import cz.vse.easyminer.miner.FixedValue
 import cz.vse.easyminer.miner.Lift
+import cz.vse.easyminer.miner.Limit
 import cz.vse.easyminer.miner.MinerProcess
 import cz.vse.easyminer.miner.MinerTask
 import cz.vse.easyminer.miner.RScript
@@ -36,13 +37,14 @@ class AprioriRProcess(
   val logger = LoggerFactory.getLogger("cz.vse.easyminer.miner.impl.AprioriRProcess")
 
   object RAruleToBoolExpression {
-    def unapply(str: String) = str
-      .split(',')
-      .map(_.split("=", 2))
-      .collect {
-        case Array(k, v) => Value(FixedValue(k, v)): BoolExpression[FixedValue]
-      }
-      .reduceLeftOption(_ AND _)
+    def unapply(str: String) = {
+      str.split(',')
+        .map(_.split("=", 2))
+        .collect {
+          case Array(k, v) => Value(FixedValue(k, v)): BoolExpression[FixedValue]
+        }
+        .reduceLeftOption(_ AND _)
+    }
   }
 
   private def executeQueries[T]: (Dataset => T) => T = {
@@ -57,7 +59,7 @@ class AprioriRProcess(
     .mkString(", ")
 
   private def getOutputARuleMapper(count: Count) = {
-    val ArulePattern = """\d+\s+\{(.+)\}\s+=>\s+\{(.+)\}\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)""".r
+    val ArulePattern = """\d+\s+\{(.*?)\}\s+=>\s+\{(.+?)\}\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)""".r
     val pf: PartialFunction[String, ARule] = {
       case ArulePattern(RAruleToBoolExpression(ant), RAruleToBoolExpression(con), AnyToDouble(s), AnyToDouble(c), AnyToDouble(l)) => {
         val (supp, conf, lift) = (Support(s), Confidence(c), Lift(l))
@@ -74,6 +76,7 @@ class AprioriRProcess(
       case (m, Confidence(x)) => m + ("confidence" -> x)
       case (m, Support(x)) => m + ("support" -> x)
       case (m, Lift(x)) => m + ("lift" -> x)
+      case (m, Limit(x)) => m + ("limit" -> x)
       case (m, _) => m
     }
     val inputSelectQuery = getInputSelectQuery(mt.antecedent OR mt.consequent)

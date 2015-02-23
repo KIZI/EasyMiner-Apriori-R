@@ -37,6 +37,8 @@ trait TemplateOpt extends ConfOpt {
   ).find(_.label == "PMML")
   
   def inputpmml2 = XML.loadString(Template("InputPMML2.mustache")).find(_.label == "PMML")
+  
+  def inputpmml3 = XML.loadString(Template("InputPMML3.mustache")).find(_.label == "PMML")
 
   def datasetSql(tableName: String) = Template("dataset.sql.mustache", Map("tableName" -> tableName))
 

@@ -8,6 +8,8 @@
 @param String         selectQuery
 @param Double         confidence
 @param Double         support
+@param Double         lift
+@param Integer        limit
 @param String         consequent
 }}
 library(RJDBC)
@@ -29,6 +31,10 @@ rules <- apriori(txns, parameter = list(confidence = {{{confidence}}}, support =
 {{#lift}}
 rules <- subset(rules, subset = lift >= {{{lift}}})
 {{/lift}}
+{{#limit}}
+rules <- sort(rules, by = "confidence")
+rules <- head(rules, {{{limit}}})
+{{/limit}}
 rules <- as(rules,"data.frame")
 options(width=10000)
 capture.output(print(rules))

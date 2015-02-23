@@ -8,5 +8,5 @@ case class ARule(
 )
 
 trait ARuleVisualizer {
-  def aruleToString(arule: ARule) : String
+  def aruleToString(arule: ARule): String
 }

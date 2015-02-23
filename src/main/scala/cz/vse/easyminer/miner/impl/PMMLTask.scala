@@ -9,6 +9,7 @@ import cz.vse.easyminer.miner.Confidence
 import cz.vse.easyminer.miner.FixedValue
 import cz.vse.easyminer.miner.InterestMeasure
 import cz.vse.easyminer.miner.Lift
+import cz.vse.easyminer.miner.Limit
 import cz.vse.easyminer.miner.Support
 import cz.vse.easyminer.miner.Value
 import cz.vse.easyminer.util.AnyToDouble
@@ -78,16 +79,25 @@ class PMMLTask(pmml: xml.Node) {
     case _ => throw new BadInputData("Unparsable consequent.")
   }
 
-  def fetchInterestMeasures: Set[InterestMeasure] = (pmml \\ "InterestMeasureThreshold")
-    .map(x => (x \ interestMeasureElemName).text -> (x \ interestThresholdElemName).text)
-    .collect {
-      case (x, AnyToDouble(v)) if v > 0 => (x, v)
-    }
-    .collect {
-      case ("FUI", v) => Confidence(v)
-      case ("SUPP" | "BASE", v) => Support(v)
-      case ("LIFT", v) => Lift(v)
-    }
-    .toSet
+  def fetchInterestMeasures: Set[InterestMeasure] = {
+    val limit = (pmml \\ "HypothesesCountMax")
+      .map(_.text)
+      .collectFirst {
+        case AnyToInt(x) => Limit(x)
+      }
+      .toSet
+    val im = (pmml \\ "InterestMeasureThreshold")
+      .map(x => (x \ interestMeasureElemName).text -> (x \ interestThresholdElemName).text)
+      .collect {
+        case (x, AnyToDouble(v)) if v > 0 => (x, v)
+      }
+      .collect {
+        case ("FUI", v) => Confidence(v)
+        case ("SUPP" | "BASE", v) => Support(v)
+        case ("LIFT", v) => Lift(v)
+      }
+      .toSet
+    im ++ limit
+  }
 
 }
