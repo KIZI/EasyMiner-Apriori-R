@@ -25,7 +25,10 @@ train <- data.frame(train, check.names=F)
 
 # arules processing
 txns <- as(train,"transactions")
-rules <- apriori(txns, parameter = list(confidence = {{{confidence}}}, support = {{{support}}}{{#lift}}, lift = {{{lift}}}{{/lift}}), appearance = list(rhs = c({{{consequent}}}), default="lhs"))
+rules <- apriori(txns, parameter = list(confidence = {{{confidence}}}, support = {{{support}}}), appearance = list(rhs = c({{{consequent}}}), default="lhs"))
+{{#lift}}
+rules <- subset(rules, subset = lift >= {{{lift}}})
+{{/lift}}
 rules <- as(rules,"data.frame")
 options(width=10000)
 capture.output(print(rules))

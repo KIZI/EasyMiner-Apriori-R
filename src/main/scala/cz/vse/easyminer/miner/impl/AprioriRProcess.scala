@@ -32,7 +32,7 @@ class AprioriRProcess(
   import cz.vse.easyminer.util.BasicFunction._
 
   val defaultSupport = 0.001
-  val defaultConfidence = 0.2
+  val defaultConfidence = 0.1
   val logger = LoggerFactory.getLogger("cz.vse.easyminer.miner.impl.AprioriRProcess")
 
   object RAruleToBoolExpression {

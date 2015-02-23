@@ -3,6 +3,7 @@ import cz.vse.easyminer.miner.AllValues
 import cz.vse.easyminer.miner.Confidence
 import cz.vse.easyminer.miner.ContingencyTable
 import cz.vse.easyminer.miner.FixedValue
+import cz.vse.easyminer.miner.Lift
 import cz.vse.easyminer.miner.MinerTask
 import cz.vse.easyminer.miner.RScript
 import cz.vse.easyminer.miner.Support
@@ -59,6 +60,19 @@ class MineSpec extends FlatSpec with Matchers with DBSpec {
     ) should matchPattern {
         case Seq(ARule(Value(FixedValue("district", "Liberec")), Value(FixedValue("cílová proměnná", "špatně splácející")), _, ContingencyTable(63, 0, 3564, 2554))) =>
       }
+  }
+
+  it should "mine with lift" in {
+    val arules = process.mine(
+      MinerTask(Value(AllValues("district")), Set(Lift(1.3)), Value(AllValues("cílová proměnná")))
+    )
+    arules should have length 76
+    for (ARule(_, _, im, _) <- arules) {
+      im.exists {
+        case Lift(v) if v >= 1.3 => true
+        case _ => false
+      } should be(true)
+    }
   }
 
 }
