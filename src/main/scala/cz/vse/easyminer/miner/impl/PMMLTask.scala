@@ -2,7 +2,7 @@ package cz.vse.easyminer.miner.impl
 
 import cz.vse.easyminer.miner.AllValues
 import cz.vse.easyminer.miner.Attribute
-import cz.vse.easyminer.miner.AttributeValueNormalizer
+import cz.vse.easyminer.miner.AttributeValidator
 import cz.vse.easyminer.miner.BadInputData
 import cz.vse.easyminer.miner.BoolExpression
 import cz.vse.easyminer.miner.Confidence
@@ -20,7 +20,7 @@ import scalikejdbc._
 
 class PMMLTask(pmml: xml.Node) {
 
-  self: AttributeValueNormalizer =>
+  self: AttributeValidator =>
 
   private val boolExpElemName = "DBASetting"
   private val attrElemName = "BBASetting"
@@ -61,10 +61,12 @@ class PMMLTask(pmml: xml.Node) {
     }
     case `attrElemName` => {
       val attrName = (el \ "FieldRef").text
-      (el \ "Coefficient") match {
-        case el if (el \ "Type").text == "One category" => Value(FixedValue(attrName, (el \ "Category").text).normalize)
-        case _ => Value(AllValues(attrName).normalize)
+      val attr = (el \ "Coefficient") match {
+        case el if (el \ "Type").text == "One category" => FixedValue(attrName, (el \ "Category").text)
+        case _ => AllValues(attrName)
       }
+      validate(attr)
+      Value(attr)
     }
     case elabel => throw new BadInputData(s"Unspecified element label: $elabel")
   }
@@ -79,11 +81,12 @@ class PMMLTask(pmml: xml.Node) {
     case _ => throw new BadInputData("Unparsable consequent.")
   }
 
+  //todo - add validator for interest measures (maybe make MinerTask validator for all attributes and bind it to a MinerProcess)
   def fetchInterestMeasures: Set[InterestMeasure] = {
     val limit = (pmml \\ "HypothesesCountMax")
       .map(_.text)
       .collectFirst {
-        case AnyToInt(x) => Limit(x)
+        case AnyToInt(x) if x > 0 => Limit(x)
       }
       .toSet
     val im = (pmml \\ "InterestMeasureThreshold")

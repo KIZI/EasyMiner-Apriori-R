@@ -38,12 +38,16 @@ class AprioriRProcess(
 
   object RAruleToBoolExpression {
     def unapply(str: String) = {
-      str.split(',')
-        .map(_.split("=", 2))
-        .collect {
-          case Array(k, v) => Value(FixedValue(k, v)): BoolExpression[FixedValue]
-        }
-        .reduceLeftOption(_ AND _)
+      if (str.isEmpty)
+        Some(None)
+      else
+        str.split(',')
+          .map(_.split("=", 2))
+          .collect {
+            case Array(k, v) => Value(FixedValue(k, v)): BoolExpression[FixedValue]
+          }
+          .reduceLeftOption(_ AND _)
+          .map(x => Some(x))
     }
   }
 
@@ -61,7 +65,7 @@ class AprioriRProcess(
   private def getOutputARuleMapper(count: Count) = {
     val ArulePattern = """\d+\s+\{(.*?)\}\s+=>\s+\{(.+?)\}\s+([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)""".r
     val pf: PartialFunction[String, ARule] = {
-      case ArulePattern(RAruleToBoolExpression(ant), RAruleToBoolExpression(con), AnyToDouble(s), AnyToDouble(c), AnyToDouble(l)) => {
+      case ArulePattern(RAruleToBoolExpression(ant), RAruleToBoolExpression(Some(con)), AnyToDouble(s), AnyToDouble(c), AnyToDouble(l)) => {
         val (supp, conf, lift) = (Support(s), Confidence(c), Lift(l))
         ARule(ant, con, Set(supp, conf, lift, count), ContingencyTable(supp, conf, lift, count))
       }

@@ -9,10 +9,13 @@ import cz.vse.easyminer.miner.MinerTask
 import cz.vse.easyminer.miner.RScript
 import cz.vse.easyminer.miner.Support
 import cz.vse.easyminer.miner.Value
+import cz.vse.easyminer.miner.impl.ARuleText
 import cz.vse.easyminer.miner.impl.AprioriRProcess
+import cz.vse.easyminer.miner.impl.BoolExpressionText
 import cz.vse.easyminer.miner.impl.DBOptsPMML
 import cz.vse.easyminer.miner.impl.MySQLDatasetBuilder
 import cz.vse.easyminer.miner.impl.MySQLQueryBuilder
+import cz.vse.easyminer.miner.impl.PMMLResult
 import org.scalatest._
 
 class MineSpec extends FlatSpec with Matchers with DBSpec {
@@ -59,7 +62,7 @@ class MineSpec extends FlatSpec with Matchers with DBSpec {
     val x = process.mine(
       MinerTask(Value(AllValues("district")), Set(Support(0.01), Confidence(0.9)), Value(AllValues("cílová proměnná")))
     ) match {
-        case Seq(ARule(Value(FixedValue("district", "Liberec")), Value(FixedValue("cílová proměnná", "špatně splácející")), _, ContingencyTable(63, 0, 3564, 2554))) => true
+        case Seq(ARule(Some(Value(FixedValue("district", "Liberec"))), Value(FixedValue("cílová proměnná", "špatně splácející")), _, ContingencyTable(63, 0, 3564, 2554))) => true
         case _ => false
       }
     x should be(true)
@@ -78,13 +81,24 @@ class MineSpec extends FlatSpec with Matchers with DBSpec {
     }
   }
 
-  it should "mine with limit 100 and return 100" in {
+  it should "mine with limit 100 and return 100 with one empty antecedent" in {
     process.mine(
       MinerTask(Value(AllValues("district")), Set(Support(0.001)), Value(AllValues("cílová proměnná")))
     ) should have length 186
-    process.mine(
+    val limitedResult = process.mine(
       MinerTask(Value(AllValues("district")), Set(Limit(100), Support(0.001)), Value(AllValues("cílová proměnná")))
-    ) should have length 100
+    )
+    limitedResult should have length 100
+    val emptyAntecedent = limitedResult.filter(_.antecedent.isEmpty)
+    emptyAntecedent should have length 1
+    val pmml = (new PMMLResult(emptyAntecedent) with ARuleText with BoolExpressionText).toPMML
+    pmml should include("<Text>()</Text>")
+    pmml should include("<FieldRef></FieldRef>")
+    pmml should include("<CatRef></CatRef>")
+    pmml should include(""" <FourFtTable a="3627" b="2554" c="0" d="0" """.trim)
+    process.mine(
+      MinerTask(Value(AllValues("district")), Set(Limit(100), Support(0.01)), Value(AllValues("cílová proměnná")))
+    ) should have length 22
   }
 
 }

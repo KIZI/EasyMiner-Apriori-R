@@ -8,6 +8,6 @@ trait ARuleText extends ARuleVisualizer {
 
   self: BoolExpressionVisualizer =>
   
-  def aruleToString(arule: ARule) : String = exprToString(arule.antecedent) + " >:< " + exprToString(arule.consequent)
+  def aruleToString(arule: ARule) : String = arule.antecedent.map(exprToString).getOrElse("*") + " >:< " + exprToString(arule.consequent)
   
 }
