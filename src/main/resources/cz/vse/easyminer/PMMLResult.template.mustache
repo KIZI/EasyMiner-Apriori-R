@@ -13,15 +13,10 @@
 @param  String         id
 @param  String         id-antecedent
 @param  String         id-consequent
-@param  Double         conf
-@param  Double         supp
-@param  Double         lift
 @param  Integer        a
 @param  Integer        b
 @param  Integer        c
 @param  Integer        d
-@param  Integer        r
-@param  Integer        n
 }}
 <?xml version="1.0" encoding="UTF-8"?>
 <PMML version="4.0" xmlns="http://www.dmg.org/PMML-4_0" 
@@ -61,21 +56,12 @@
             
             {{#arules}}
             <AssociationRule id="{{id}}"
+                             {{#id-antecedent}}
                              antecedent="{{id-antecedent}}"
+                             {{/id-antecedent}}
                              consequent="{{id-consequent}}"
             >
                 <Text>{{text}}</Text>
-                <IMValue name="FUI" type="Abs">{{conf}}</IMValue>
-                <IMValue name="SUPP" type="Abs">{{supp}}</IMValue>
-                <IMValue name="a">{{a}}</IMValue>
-                <IMValue name="b">{{b}}</IMValue>
-                <IMValue name="c">{{c}}</IMValue>
-                <IMValue name="d">{{d}}</IMValue>
-                <IMValue name="r">{{r}}</IMValue>
-                <IMValue name="n">{{n}}</IMValue>
-                <IMValue name="Conf">{{conf}}</IMValue>
-                <IMValue name="Supp">{{supp}}</IMValue>
-                <IMValue name="AvgDf">{{lift}}</IMValue>
                 <FourFtTable a="{{a}}" b="{{b}}" c="{{c}}" d="{{d}}"/>
             </AssociationRule>
             {{/arules}}

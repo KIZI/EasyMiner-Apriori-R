@@ -5,9 +5,9 @@ import cz.vse.easyminer.miner.BadInputData
 import cz.vse.easyminer.miner.MinerTask
 import cz.vse.easyminer.miner.impl.ARuleText
 import cz.vse.easyminer.miner.impl.AprioriRProcess
-import cz.vse.easyminer.miner.impl.AttributeValidatorImpl
 import cz.vse.easyminer.miner.impl.BoolExpressionText
 import cz.vse.easyminer.miner.impl.DBOptsPMML
+import cz.vse.easyminer.miner.impl.MinerTaskValidatorImpl
 import cz.vse.easyminer.miner.impl.MySQLDatasetBuilder
 import cz.vse.easyminer.miner.impl.MySQLQueryBuilder
 import cz.vse.easyminer.miner.impl.PMMLResult
@@ -30,13 +30,13 @@ class MinerActor extends Actor {
         pmml.find(_.label == "PMML") match {
           case Some(_pmml) => {
             logger.trace("PMML Input:\n" + _pmml)
-            val task = new PMMLTask(_pmml) with AttributeValidatorImpl
+            val task = new PMMLTask(_pmml)
             val process = new AprioriRProcess(
               "RAprioriWithMySQL.mustache",
               Conf().get[String]("r-miner.jdbc-driver-dir-absolute-path"),
               Conf().get[String]("r-miner.rserve-address"),
               Conf().getOrElse[Int]("r-miner.rserve-port", 6311)
-            ) with MySQLDatasetBuilder with MySQLQueryBuilder with DBOptsPMML {
+            ) with MinerTaskValidatorImpl with MySQLDatasetBuilder with MySQLQueryBuilder with DBOptsPMML {
               val pmml = _pmml
             }
             val minertask = MinerTask(task.fetchAntecedent, task.fetchInterestMeasures, task.fetchConsequent)

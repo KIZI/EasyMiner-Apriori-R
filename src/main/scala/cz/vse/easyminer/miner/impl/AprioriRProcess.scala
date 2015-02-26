@@ -14,6 +14,7 @@ import cz.vse.easyminer.miner.Lift
 import cz.vse.easyminer.miner.Limit
 import cz.vse.easyminer.miner.MinerProcess
 import cz.vse.easyminer.miner.MinerTask
+import cz.vse.easyminer.miner.MinerTaskValidator
 import cz.vse.easyminer.miner.RScript
 import cz.vse.easyminer.miner.Support
 import cz.vse.easyminer.miner.Value
@@ -28,7 +29,7 @@ class AprioriRProcess(
   val rPort: Int = 6311
 ) extends MinerProcess with RScript {
 
-  self: DBOpts with DatasetBuilder with DatasetQueryBuilder =>
+  self: DBOpts with DatasetBuilder with DatasetQueryBuilder with MinerTaskValidator =>
 
   import cz.vse.easyminer.util.BasicFunction._
 
@@ -73,7 +74,7 @@ class AprioriRProcess(
     pf
   }
 
-  def mine(mt: MinerTask) = executeQueries(implicit db => {
+  protected def innerMine(mt: MinerTask) = executeQueries(implicit db => {
     import cz.vse.easyminer.util.BasicFunction._
     logger.debug(s"New task was received: $mt")
     val im = mt.interestMeasures.foldLeft(Map("confidence" -> defaultConfidence, "support" -> defaultSupport)) {

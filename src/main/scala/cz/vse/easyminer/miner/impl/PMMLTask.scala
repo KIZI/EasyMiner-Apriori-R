@@ -2,7 +2,6 @@ package cz.vse.easyminer.miner.impl
 
 import cz.vse.easyminer.miner.AllValues
 import cz.vse.easyminer.miner.Attribute
-import cz.vse.easyminer.miner.AttributeValidator
 import cz.vse.easyminer.miner.BadInputData
 import cz.vse.easyminer.miner.BoolExpression
 import cz.vse.easyminer.miner.Confidence
@@ -19,8 +18,6 @@ import scala.xml.Node
 import scalikejdbc._
 
 class PMMLTask(pmml: xml.Node) {
-
-  self: AttributeValidator =>
 
   private val boolExpElemName = "DBASetting"
   private val attrElemName = "BBASetting"
@@ -65,7 +62,6 @@ class PMMLTask(pmml: xml.Node) {
         case el if (el \ "Type").text == "One category" => FixedValue(attrName, (el \ "Category").text)
         case _ => AllValues(attrName)
       }
-      validate(attr)
       Value(attr)
     }
     case elabel => throw new BadInputData(s"Unspecified element label: $elabel")

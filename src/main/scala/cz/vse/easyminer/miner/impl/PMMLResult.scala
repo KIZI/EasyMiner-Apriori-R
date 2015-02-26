@@ -5,12 +5,8 @@ import cz.vse.easyminer.miner.ARule
 import cz.vse.easyminer.miner.ARuleVisualizer
 import cz.vse.easyminer.miner.BoolExpression
 import cz.vse.easyminer.miner.BoolExpressionVisualizer
-import cz.vse.easyminer.miner.Confidence
-import cz.vse.easyminer.miner.Count
 import cz.vse.easyminer.miner.FixedValue
-import cz.vse.easyminer.miner.Lift
 import cz.vse.easyminer.miner.NOT
-import cz.vse.easyminer.miner.Support
 import cz.vse.easyminer.miner.Value
 import cz.vse.easyminer.util.Template
 
@@ -18,24 +14,16 @@ class PMMLResult(arules: Seq[ARule]) {
 
   self: ARuleVisualizer with BoolExpressionVisualizer =>
 
-  val emptyAntecedent = Value(FixedValue("", ""))
-
   private val arulesToPMMLMapper: PartialFunction[ARule, Map[String, Any]] = {
     case ar @ ARule(ant, con, im, ct) => Map(
       "id" -> s"AR${ar.hashCode}",
-      "id-antecedent" -> baref(ant.getOrElse(emptyAntecedent)),
       "id-consequent" -> baref(con),
       "text" -> aruleToString(ar),
-      "conf" -> im.collectFirst { case Confidence(conf) => conf },
-      "supp" -> im.collectFirst { case Support(supp) => supp },
-      "lift" -> im.collectFirst { case Lift(lift) => lift },
       "a" -> ct.a,
       "b" -> ct.b,
       "c" -> ct.c,
-      "d" -> ct.d,
-      "r" -> (ct.a + ct.b),
-      "n" -> im.collectFirst { case Count(n) => n }
-    )
+      "d" -> ct.d
+    ) ++ ant.map(x => "id-antecedent" -> baref(x)).toMap
   }
 
   private val dbaToPMMLMapper = {
@@ -72,7 +60,7 @@ class PMMLResult(arules: Seq[ARule]) {
   }
 
   def toPMML = {
-    val exprs = arules.flatMap(x => Seq(x.antecedent.getOrElse(emptyAntecedent), x.consequent)).map(collectExpression).reduceOption(_ ++ _)
+    val exprs = arules.flatMap(x => x.consequent :: x.antecedent.toList).map(collectExpression).reduceOption(_ ++ _)
     Template.apply(
       "PMMLResult.template.mustache",
       Map(

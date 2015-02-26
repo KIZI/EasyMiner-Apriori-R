@@ -1,7 +1,14 @@
 package cz.vse.easyminer.miner
 
-trait MinerProcess {
-  
-  def mine(mt: MinerTask) : Seq[ARule]
-  
+abstract class MinerProcess {
+
+  self: MinerTaskValidator =>
+
+  final def mine(mt: MinerTask) = {
+    validate(mt)
+    innerMine(mt)
+  }
+
+  protected def innerMine(mt: MinerTask): Seq[ARule]
+
 }
