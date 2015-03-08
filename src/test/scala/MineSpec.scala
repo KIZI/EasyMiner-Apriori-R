@@ -25,8 +25,11 @@ import cz.vse.easyminer.miner.impl.MySQLQueryBuilder
 import cz.vse.easyminer.miner.impl.PMMLResult
 import org.scalatest._
 
-@Ignore class MineSpec extends FlatSpec with Matchers with DBSpec {
+@DoNotDiscover
+class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
 
+  import DBSpec._
+  
   lazy val R = new RScript {
     val rServer = rserveAddress
     val rPort = rservePort
@@ -59,10 +62,10 @@ import org.scalatest._
         tableName,
         "*",
         """ "cílová proměnná=splaceno bez problémů","cílová proměnná=dobře splácející","cílová proměnná=špatně splácející","cílová proměnná=definitivně ztraceno" """.trim,
-        0.3,
-        0.001
+        0.5,
+        0.002
       )
-    ) should have length 24855
+    ).length shouldBe 20339
   }
 
   "AprioriRProcess" should "mine" in {
@@ -79,7 +82,7 @@ import org.scalatest._
     val arules = process.mine(
       MinerTask(Value(AllValues("district")), Set(Lift(1.3), Confidence(0.1), Support(0.001)), Value(AllValues("cílová proměnná")))
     )
-    arules should have length 76
+    arules.length shouldBe 76
     for (ARule(_, _, im, _) <- arules) {
       im.exists {
         case Lift(v) if v >= 1.3 => true
@@ -91,13 +94,13 @@ import org.scalatest._
   it should "mine with limit 100 and return 100 with one empty antecedent" in {
     process.mine(
       MinerTask(Value(AllValues("district")), Set(Support(0.001), Confidence(0.1)), Value(AllValues("cílová proměnná")))
-    ) should have length 186
+    ).length shouldBe 186
     val limitedResult = process.mine(
       MinerTask(Value(AllValues("district")), Set(Limit(100), Support(0.001), Confidence(0.1)), Value(AllValues("cílová proměnná")))
     )
-    limitedResult should have length 100
+    limitedResult.length shouldBe 100
     val emptyAntecedent = limitedResult.filter(_.antecedent.isEmpty)
-    emptyAntecedent should have length 1
+    emptyAntecedent.length shouldBe 1
     val pmml = (new PMMLResult(emptyAntecedent) with ARuleText with BoolExpressionText).toPMML
     pmml should not include ("<Text>()</Text>")
     pmml should not include ("<FieldRef></FieldRef>")
@@ -105,7 +108,7 @@ import org.scalatest._
     pmml should include(""" <FourFtTable a="3627" b="2554" c="0" d="0" """.trim)
     process.mine(
       MinerTask(Value(AllValues("district")), Set(Limit(100), Support(0.01), Confidence(0.1)), Value(AllValues("cílová proměnná")))
-    ) should have length 22
+    ).length shouldBe 22
   }
 
   it should "throw an exception due to bad interest measure values" in {

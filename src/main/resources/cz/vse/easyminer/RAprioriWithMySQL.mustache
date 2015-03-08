@@ -37,4 +37,5 @@ rules <- head(rules, {{{limit}}})
 {{/limit}}
 rules <- as(rules,"data.frame")
 options(width=10000)
+options(max.print=1000000)
 capture.output(print(rules))

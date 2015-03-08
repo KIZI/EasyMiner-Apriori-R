@@ -5,21 +5,10 @@ import scala.util.Random
 import cz.vse.easyminer.util.BasicFunction._
 import cz.vse.easyminer.util.ScriptRunner
 
-trait DBSpec extends FlatSpec with BeforeAndAfterAll with ConfOpt with TemplateOpt {
+class DBSpec extends Suites(new DatasetSpec, new MineSpec, new OutputSpec) with BeforeAndAfterAll with ConfOpt with TemplateOpt {
 
-  val originalTableName = "testdata"
-
-  val tableName = {
-    val allowedAsciiChars = List(65 to 90, 97 to 122).flatMap(_.toList).map(_.toChar).toIndexedSeq
-    val allowedNonAsciiChars = "ěščřžýáíéůúĚŠČŘŽÝÁÍÉ".toIndexedSeq
-    0.until(10).foldLeft("") {
-      (r, x) =>
-        val sep = if (x == 5) " " else ""
-        val charList = if (x % 2 == 0) allowedAsciiChars else allowedNonAsciiChars
-        r + sep + charList(Random.nextInt(charList.length))
-    }
-  }
-
+  import DBSpec._
+  
   override def beforeAll() {
     DBSpec
     ConnectionPool.singleton(
@@ -54,4 +43,17 @@ trait DBSpec extends FlatSpec with BeforeAndAfterAll with ConfOpt with TemplateO
 object DBSpec {
   Class.forName("com.mysql.jdbc.Driver")
   GlobalSettings.loggingSQLAndTime = LoggingSQLAndTimeSettings(enabled = false)
+
+  val originalTableName = "testdata"
+
+  val tableName = {
+    val allowedAsciiChars = List(65 to 90, 97 to 122).flatMap(_.toList).map(_.toChar).toIndexedSeq
+    val allowedNonAsciiChars = "ěščřžýáíéůúĚŠČŘŽÝÁÍÉ".toIndexedSeq
+    0.until(10).foldLeft("") {
+      (r, x) =>
+        val sep = if (x == 5) " " else ""
+        val charList = if (x % 2 == 0) allowedAsciiChars else allowedNonAsciiChars
+        r + sep + charList(Random.nextInt(charList.length))
+    }
+  }
 }
