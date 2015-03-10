@@ -22,3 +22,16 @@ trait BoolExpressionText extends BoolExpressionVisualizer {
   }
   
 }
+
+trait BoolExpressionShortText extends BoolExpressionVisualizer {
+
+  def exprToString[Attribute](expr: BoolExpression[Attribute]) : String = expr match {
+    case Value(AllValues(name)) => s"$name(*)"
+    case Value(FixedValue(name, value)) => s"$name($value)"
+    case AND(a, b) => exprToString(a) + " & " + exprToString(b)
+    case OR(a, b) => exprToString(a) + " | " + exprToString(b)
+    case NOT(a) => "^" + exprToString(a)
+    case _ => ""
+  }
+  
+}

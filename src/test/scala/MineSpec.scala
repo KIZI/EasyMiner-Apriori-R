@@ -17,7 +17,7 @@ import cz.vse.easyminer.miner.Support
 import cz.vse.easyminer.miner.Value
 import cz.vse.easyminer.miner.impl.ARuleText
 import cz.vse.easyminer.miner.impl.AprioriRProcess
-import cz.vse.easyminer.miner.impl.BoolExpressionText
+import cz.vse.easyminer.miner.impl.BoolExpressionShortText
 import cz.vse.easyminer.miner.impl.DBOptsPMML
 import cz.vse.easyminer.miner.impl.MinerTaskValidatorImpl
 import cz.vse.easyminer.miner.impl.MySQLDatasetBuilder
@@ -26,6 +26,7 @@ import cz.vse.easyminer.miner.impl.PMMLResult
 import org.scalatest._
 
 @DoNotDiscover
+@Ignore
 class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
 
   import DBSpec._
@@ -101,7 +102,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     limitedResult.length shouldBe 100
     val emptyAntecedent = limitedResult.filter(_.antecedent.isEmpty)
     emptyAntecedent.length shouldBe 1
-    val pmml = (new PMMLResult(emptyAntecedent) with ARuleText with BoolExpressionText).toPMML
+    val pmml = (new PMMLResult(emptyAntecedent) with ARuleText with BoolExpressionShortText).toPMML
     pmml should not include ("<Text>()</Text>")
     pmml should not include ("<FieldRef></FieldRef>")
     pmml should not include ("antecedent=")

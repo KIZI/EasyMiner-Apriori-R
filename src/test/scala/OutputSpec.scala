@@ -1,8 +1,13 @@
 import cz.vse.easyminer.miner.AND
+import cz.vse.easyminer.miner.ARule
 import cz.vse.easyminer.miner.BadOutputData
+import cz.vse.easyminer.miner.ContingencyTable
 import cz.vse.easyminer.miner.FixedValue
 import cz.vse.easyminer.miner.Value
+import cz.vse.easyminer.miner.impl.ARuleText
+import cz.vse.easyminer.miner.impl.BoolExpressionShortText
 import cz.vse.easyminer.miner.impl.MySQLDatasetBuilder
+import cz.vse.easyminer.miner.impl.PMMLResult
 import cz.vse.easyminer.miner.impl.RArule
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -49,6 +54,11 @@ class OutputSpec extends FlatSpec with Matchers with ConfOpt {
         RArule.unapply("age,salary=8363")(dataset, newcache)
       }
     }
+  }
+
+  it should "have right visualisation" in {
+    val pmml = (new PMMLResult(Seq(ARule(Some(Value(FixedValue("name1", "value1")) AND Value(FixedValue("name2", "value2"))  AND Value(FixedValue("name3", "value3"))), Value(FixedValue("name4", "value4")), Set.empty, ContingencyTable(5, 10, 15, 20)))) with ARuleText with BoolExpressionShortText).toPMML
+    pmml should include ("<Text>name1(value1) & name2(value2) & name3(value3) &rarr; name4(value4)</Text>")
   }
 
 }

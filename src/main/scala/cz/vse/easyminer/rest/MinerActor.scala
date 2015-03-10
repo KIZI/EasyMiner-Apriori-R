@@ -5,7 +5,7 @@ import cz.vse.easyminer.miner.BadInputData
 import cz.vse.easyminer.miner.MinerTask
 import cz.vse.easyminer.miner.impl.ARuleText
 import cz.vse.easyminer.miner.impl.AprioriRProcess
-import cz.vse.easyminer.miner.impl.BoolExpressionText
+import cz.vse.easyminer.miner.impl.BoolExpressionShortText
 import cz.vse.easyminer.miner.impl.DBOptsPMML
 import cz.vse.easyminer.miner.impl.MinerTaskValidatorImpl
 import cz.vse.easyminer.miner.impl.MySQLDatasetBuilder
@@ -41,7 +41,7 @@ class MinerActor extends Actor {
             }
             val minertask = MinerTask(task.fetchAntecedent, task.fetchInterestMeasures, task.fetchConsequent)
             val result = process.mine(minertask)
-            val pmmlresult = (new PMMLResult(result) with ARuleText with BoolExpressionText).toPMML
+            val pmmlresult = (new PMMLResult(result) with ARuleText with BoolExpressionShortText).toPMML
             logger.trace("PMML Output:\n" + pmmlresult)
             logger.info(s"$path: mining end in ${System.currentTimeMillis - starttime}ms")
             sender ! Sent.Result(pmmlresult)
