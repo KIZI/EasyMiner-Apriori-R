@@ -77,7 +77,6 @@ class PMMLTask(pmml: xml.Node) {
     case _ => throw new BadInputData("Unparsable consequent.")
   }
 
-  //todo - add validator for interest measures (maybe make MinerTask validator for all attributes and bind it to a MinerProcess)
   def fetchInterestMeasures: Set[InterestMeasure] = {
     val limit = (pmml \\ "HypothesesCountMax")
       .map(_.text)

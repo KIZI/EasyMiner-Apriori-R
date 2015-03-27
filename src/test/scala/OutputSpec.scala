@@ -58,7 +58,7 @@ class OutputSpec extends FlatSpec with Matchers with ConfOpt {
 
   it should "have right visualisation" in {
     val pmml = (new PMMLResult(Seq(ARule(Some(Value(FixedValue("name1", "value1")) AND Value(FixedValue("name2", "value2"))  AND Value(FixedValue("name3", "value3"))), Value(FixedValue("name4", "value4")), Set.empty, ContingencyTable(5, 10, 15, 20)))) with ARuleText with BoolExpressionShortText).toPMML
-    pmml should include ("<Text>name1(value1) & name2(value2) & name3(value3) &rarr; name4(value4)</Text>")
+    pmml should include ("<Text>name1(value1) &amp; name2(value2) &amp; name3(value3) → name4(value4)</Text>")
   }
 
 }
