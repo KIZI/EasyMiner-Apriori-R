@@ -12,6 +12,7 @@ import cz.vse.easyminer.miner.impl.MySQLDatasetBuilder
 import cz.vse.easyminer.miner.impl.MySQLQueryBuilder
 import cz.vse.easyminer.miner.impl.PMMLResult
 import cz.vse.easyminer.miner.impl.PMMLTask
+import cz.vse.easyminer.miner.impl.RConnectionPoolImpl
 import cz.vse.easyminer.util.Conf
 import org.slf4j.LoggerFactory
 import scala.xml.NodeSeq
@@ -34,8 +35,7 @@ class MinerActor extends Actor {
             val process = new AprioriRProcess(
               "RAprioriWithMySQL.mustache",
               Conf().get[String]("r-miner.jdbc-driver-dir-absolute-path"),
-              Conf().get[String]("r-miner.rserve-address"),
-              Conf().getOrElse[Int]("r-miner.rserve-port", 6311)
+              RConnectionPoolImpl.default
             ) with MinerTaskValidatorImpl with MySQLDatasetBuilder with MySQLQueryBuilder with DBOptsPMML {
               val pmml = _pmml
             }

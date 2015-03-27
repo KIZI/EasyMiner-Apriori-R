@@ -16,6 +16,7 @@ import cz.vse.easyminer.miner.Limit
 import cz.vse.easyminer.miner.MinerProcess
 import cz.vse.easyminer.miner.MinerTask
 import cz.vse.easyminer.miner.MinerTaskValidator
+import cz.vse.easyminer.miner.RConnectionPool
 import cz.vse.easyminer.miner.RScript
 import cz.vse.easyminer.miner.Support
 import cz.vse.easyminer.miner.Value
@@ -27,8 +28,7 @@ import scala.annotation.tailrec
 class AprioriRProcess(
   rTemplate: String,
   jdbcDriverAbsolutePath: String,
-  val rServer: String,
-  val rPort: Int = 6311
+  val rcp: RConnectionPool
 ) extends MinerProcess with RScript {
 
   self: DBOpts with DatasetBuilder with DatasetQueryBuilder with MinerTaskValidator =>

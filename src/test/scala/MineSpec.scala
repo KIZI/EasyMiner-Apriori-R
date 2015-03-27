@@ -23,6 +23,7 @@ import cz.vse.easyminer.miner.impl.MinerTaskValidatorImpl
 import cz.vse.easyminer.miner.impl.MySQLDatasetBuilder
 import cz.vse.easyminer.miner.impl.MySQLQueryBuilder
 import cz.vse.easyminer.miner.impl.PMMLResult
+import cz.vse.easyminer.miner.impl.RConnectionPoolImpl
 import org.scalatest._
 
 @DoNotDiscover
@@ -32,15 +33,13 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
   import DBSpec._
   
   lazy val R = new RScript {
-    val rServer = rserveAddress
-    val rPort = rservePort
+    val rcp = RConnectionPoolImpl.default
   }
 
   lazy val process = new AprioriRProcess(
     "RAprioriWithMySQL.mustache",
     jdbcdriver,
-    rserveAddress,
-    rservePort
+    RConnectionPoolImpl.default
   ) with MinerTaskValidatorImpl with MySQLDatasetBuilder with MySQLQueryBuilder with DBOptsPMML {
     val pmml = inputpmml(tableName).get
   }
