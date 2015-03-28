@@ -4,6 +4,7 @@ import cz.vse.easyminer.miner.AllValues
 import cz.vse.easyminer.miner.Attribute
 import cz.vse.easyminer.miner.BadInputData
 import cz.vse.easyminer.miner.BoolExpression
+import cz.vse.easyminer.miner.BorrowedConnection
 import cz.vse.easyminer.miner.Confidence
 import cz.vse.easyminer.miner.ContingencyTable
 import cz.vse.easyminer.miner.FixedValue
@@ -27,7 +28,6 @@ import cz.vse.easyminer.miner.impl.RConnectionPoolImpl
 import org.scalatest._
 
 @DoNotDiscover
-@Ignore
 class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
 
   import DBSpec._
@@ -44,6 +44,39 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     val pmml = inputpmml(tableName).get
   }
 
+  "R connection pooling" should "have minIdle = 2 and maxIdle = 10" in {
+    val conn = new RConnectionPoolImpl(rserveAddress, rservePort, false)
+    def makeBorrowedConnections(num: Int) = (0 until num).map(_ => conn.borrow).toList
+    var borrowedConnections = List.empty[BorrowedConnection]
+    conn.refresh
+    conn.numIdle shouldBe 2
+    borrowedConnections = makeBorrowedConnections(1)
+    conn.refresh
+    conn.numIdle shouldBe 2
+    borrowedConnections = borrowedConnections ::: makeBorrowedConnections(3)
+    conn.refresh
+    conn.numIdle shouldBe 2
+    conn.numActive shouldBe 4
+    borrowedConnections foreach conn.release
+    Thread sleep 2000
+    conn.refresh
+    conn.numIdle shouldBe 6
+    conn.numActive shouldBe 0
+    borrowedConnections = makeBorrowedConnections(3)
+    conn.numIdle shouldBe 3
+    conn.numActive shouldBe 3
+    borrowedConnections = borrowedConnections ::: makeBorrowedConnections(9)
+    conn.refresh
+    conn.numIdle shouldBe 2
+    conn.numActive shouldBe 12
+    borrowedConnections foreach conn.release
+    Thread sleep 2000
+    conn.refresh
+    conn.numIdle shouldBe 10
+    conn.numActive shouldBe 0
+    conn.close
+  }
+  
   "R Script with UTF8+space select query and consequents" should "return one association rule" in {
     R.eval(
       rscript(
