@@ -24,6 +24,7 @@ class RConnectionPoolImpl(rServer: String, rPort: Int, prepareLibs: Boolean = tr
     if (prepareLibs) {
       conn.eval("library(RJDBC)")
       conn.eval("library(arules)")
+      conn.eval("library(rCBA)")
     }
     logger.debug("New R connection has been created and prepared.")
     conn

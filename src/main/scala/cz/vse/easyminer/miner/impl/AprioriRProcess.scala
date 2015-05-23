@@ -45,7 +45,7 @@ class AprioriRProcess(
       case (m, Support(x)) => m + ("support" -> x)
       case (m, Lift(x)) => m + ("lift" -> x)
       case (m, Limit(x)) => m + ("limit" -> x)
-      case (m, RuleLength(x)) => m + ("rule-length" -> x)
+      case (m, RuleLength(x)) => m + ("maxlen" -> x)
       case (m, CBA) => m + ("cba" -> true)
       case (m, _) => m
     }

@@ -11,9 +11,12 @@
 @param Double         lift
 @param Integer        limit
 @param String         consequent
+@param Integer        maxlen
+@param Boolean        cba
 }}
 library(RJDBC)
 library(arules)
+library(rCBA)
 
 # load data from mysql
 drv <- JDBC("com.mysql.jdbc.Driver", list.files("{{jdbcDriverAbsolutePath}}", pattern="jar$",full.names=T))
@@ -27,15 +30,22 @@ train <- data.frame(train, check.names=F)
 
 # arules processing
 txns <- as(train,"transactions")
-rules <- apriori(txns, parameter = list(confidence = {{{confidence}}}, support = {{{support}}}), appearance = list(rhs = c({{{consequent}}}), default="lhs"))
+rules <- apriori(txns, parameter = list(confidence = {{{confidence}}}, support = {{{support}}}{{#maxlen}}, maxlen = {{{maxlen}}}{{/maxlen}}), appearance = list(rhs = c({{{consequent}}}), default="lhs"))
 {{#lift}}
 rules <- subset(rules, subset = lift >= {{{lift}}})
 {{/lift}}
+{{#cba}}
+rules <- as(rules,"data.frame")
+rules <- pruning(train, rules, method="m2cba")
+{{/cba}}
+{{^cba}}
+rules <- as(rules,"data.frame")
+{{/cba}}
 {{#limit}}
-rules <- sort(rules, by = "confidence")
+rules <- rules[with(rules, order(-confidence)), ]
 rules <- head(rules, {{{limit}}})
 {{/limit}}
-rules <- as(rules,"data.frame")
+
 options(width=10000)
 options(max.print=1000000)
 capture.output(print(rules))
