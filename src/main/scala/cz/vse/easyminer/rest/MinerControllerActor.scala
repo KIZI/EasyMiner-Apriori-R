@@ -1,13 +1,10 @@
 package cz.vse.easyminer.rest
 
-import akka.actor.Actor
-import akka.actor.FSM
-import akka.actor.Props
-import scala.xml.NodeSeq
-import akka.actor.ReceiveTimeout
+import akka.actor.{Actor, FSM, Props, ReceiveTimeout}
 import org.slf4j.LoggerFactory
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.xml.NodeSeq
 
 class MinerControllerActor(id: String) extends Actor with FSM[MinerControllerActor.State, MinerControllerActor.Data] {
   
@@ -16,53 +13,45 @@ class MinerControllerActor(id: String) extends Actor with FSM[MinerControllerAct
   val child = context.actorOf(Props[MinerActor], name = "miner")
   val logger = LoggerFactory.getLogger("cz.vse.easyminer.rest.MinerControllerActor")
   
-  setTimer("timeout", ReceiveTimeout, 2 minutes, false)
+  setTimer("timeout", ReceiveTimeout, 2 minutes, repeat = false)
   
   startWith(State.Waiting, Data.NoData)
   
   when(State.Waiting) {
-    case Event(Sent.Task(pmml), _) => {
-        logger.debug(s"$id: Sent.Task(pmml) -> State.InProgress")
-        child ! pmml
-        goto(State.InProgress)
-      }
+    case Event(Sent.Task(pmml), _) =>
+      logger.debug(s"$id: Sent.Task(pmml) -> State.InProgress")
+      child ! pmml
+      goto(State.InProgress)
   }
   
   when(State.InProgress) {
-    case Event(Sent.ResultRequest, _) => {
-        logger.debug(s"$id: Sent.ResultRequest -> Reply.InProgress")
-        stay replying Reply.InProgress
-      }
-    case Event(Sent.Error(th), _) => {
-        logger.debug(s"$id: Sent.Error -> State.Finished, Data.Error($th)")
-        goto(State.Finished) using Data.Error(th)
-      }
-    case Event(Sent.Result(pmml), _) => {
-        logger.debug(s"$id: Sent.Result -> State.Finished, Data.Result(pmml)")
-        goto(State.Finished) using Data.Result(pmml)
-      }
+    case Event(Sent.ResultRequest, _) =>
+      logger.debug(s"$id: Sent.ResultRequest -> Reply.InProgress")
+      stay replying Reply.InProgress
+    case Event(Sent.Error(th), _) =>
+      logger.debug(s"$id: Sent.Error -> State.Finished, Data.Error($th)")
+      goto(State.Finished) using Data.Error(th)
+    case Event(Sent.Result(pmml), _) =>
+      logger.debug(s"$id: Sent.Result -> State.Finished, Data.Result(pmml)")
+      goto(State.Finished) using Data.Result(pmml)
   }
   
   when(State.Finished) {
-    case Event(Sent.ResultRequest, Data.Result(pmml)) => {
-        logger.debug(s"$id: Sent.ResultRequest -> Reply.Result(pmml), stop")
-        stop replying Reply.Result(pmml) 
-      }
-    case Event(Sent.ResultRequest, Data.Error(th)) => {
-        logger.debug(s"$id: Sent.ResultRequest -> Reply.Error($th), stop")
-        stop replying Reply.Error(th) 
-      }
+    case Event(Sent.ResultRequest, Data.Result(pmml)) =>
+      logger.debug(s"$id: Sent.ResultRequest -> Reply.Result(pmml), stop")
+      stop replying Reply.Result(pmml)
+    case Event(Sent.ResultRequest, Data.Error(th)) =>
+      logger.debug(s"$id: Sent.ResultRequest -> Reply.Error($th), stop")
+      stop replying Reply.Error(th)
   }
   
   whenUnhandled {
-    case Event(ReceiveTimeout, _) => {
-        logger.debug(s"$id: Sent.ReceiveTimeout -> stop")
-        stop
-      }
-    case Event(_, _) => {
-        logger.warn(s"$id: Sent.Undefined -> stop")
-        stop
-      }
+    case Event(ReceiveTimeout, _) =>
+      logger.debug(s"$id: Sent.ReceiveTimeout -> stop")
+      stop()
+    case Event(_, _) =>
+      logger.warn(s"$id: Sent.Undefined -> stop")
+      stop()
   }
   
 }

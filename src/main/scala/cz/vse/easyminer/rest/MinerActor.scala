@@ -1,22 +1,12 @@
 package cz.vse.easyminer.rest
 
 import akka.actor.Actor
-import cz.vse.easyminer.miner.BadInputData
-import cz.vse.easyminer.miner.MinerTask
-import cz.vse.easyminer.miner.impl.ARuleText
-import cz.vse.easyminer.miner.impl.AprioriRProcess
-import cz.vse.easyminer.miner.impl.BoolExpressionShortText
-import cz.vse.easyminer.miner.impl.DBOptsPMML
-import cz.vse.easyminer.miner.impl.MinerTaskValidatorImpl
-import cz.vse.easyminer.miner.impl.MySQLDatasetBuilder
-import cz.vse.easyminer.miner.impl.MySQLQueryBuilder
-import cz.vse.easyminer.miner.impl.PMMLResult
-import cz.vse.easyminer.miner.impl.PMMLTask
-import cz.vse.easyminer.miner.impl.RConnectionPoolImpl
+import cz.vse.easyminer.miner.{BadInputData, MinerTask}
+import cz.vse.easyminer.miner.impl.{ARuleText, AprioriRProcess, BoolExpressionShortText, DBOptsPMML, MinerTaskValidatorImpl, MySQLDatasetBuilder, MySQLQueryBuilder, PMMLResult, PMMLTask, RConnectionPoolImpl}
+import cz.vse.easyminer.rest.MinerControllerActor._
 import cz.vse.easyminer.util.Conf
 import org.slf4j.LoggerFactory
 import scala.xml.NodeSeq
-import MinerControllerActor._
 
 class MinerActor extends Actor {
 
@@ -24,12 +14,12 @@ class MinerActor extends Actor {
   val path = self.path.toStringWithoutAddress
 
   def receive = {
-    case pmml: NodeSeq => {
+    case pmml: NodeSeq =>
       val starttime = System.currentTimeMillis
       logger.info(s"$path: mining start...")
       try {
         pmml.find(_.label == "PMML") match {
-          case Some(_pmml) => {
+          case Some(_pmml) =>
             logger.trace("PMML Input:\n" + _pmml)
             val task = new PMMLTask(_pmml)
             val process = new AprioriRProcess(
@@ -45,16 +35,14 @@ class MinerActor extends Actor {
             logger.trace("PMML Output:\n" + pmmlresult)
             logger.info(s"$path: mining end in ${System.currentTimeMillis - starttime}ms")
             sender ! Sent.Result(pmmlresult)
-          }
           case None => throw new BadInputData("PMML element not found!")
         }
       } catch {
         case th: Throwable => sender ! Sent.Error(th)
       }
-    }
   }
 
-  override def postStop = {
+  override def postStop() = {
     logger.debug(s"$path: stopping...")
   }
 

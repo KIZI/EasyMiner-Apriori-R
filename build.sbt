@@ -35,7 +35,7 @@ libraryDependencies ++= {
 
 oneJarSettings
 
-seq(scalateSettings:_*)
+Seq(scalateSettings:_*)
 
 scalateTemplateConfig in Compile <<= (sourceDirectory in Compile){ base =>
   Seq(

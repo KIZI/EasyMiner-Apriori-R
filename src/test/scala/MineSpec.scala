@@ -1,21 +1,4 @@
-import cz.vse.easyminer.miner.AND
-import cz.vse.easyminer.miner.ARule
-import cz.vse.easyminer.miner.AllValues
-import cz.vse.easyminer.miner.Attribute
-import cz.vse.easyminer.miner.BadInputData
-import cz.vse.easyminer.miner.BoolExpression
-import cz.vse.easyminer.miner.BorrowedConnection
-import cz.vse.easyminer.miner.Confidence
-import cz.vse.easyminer.miner.ContingencyTable
-import cz.vse.easyminer.miner.FixedValue
-import cz.vse.easyminer.miner.InterestMeasure
-import cz.vse.easyminer.miner.Lift
-import cz.vse.easyminer.miner.Limit
-import cz.vse.easyminer.miner.MinerTask
-import cz.vse.easyminer.miner.NOT
-import cz.vse.easyminer.miner.RScript
-import cz.vse.easyminer.miner.Support
-import cz.vse.easyminer.miner.Value
+import cz.vse.easyminer.miner._
 import cz.vse.easyminer.miner.impl.ARuleText
 import cz.vse.easyminer.miner.impl.AprioriRProcess
 import cz.vse.easyminer.miner.impl.BoolExpressionShortText
@@ -108,7 +91,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
         case Seq(ARule(Some(Value(FixedValue("district", "Liberec"))), Value(FixedValue("cílová proměnná", "špatně splácející")), _, ContingencyTable(63, 0, 3564, 2554))) => true
         case _ => false
       }
-    x should be(true)
+    x shouldBe true
   }
 
   it should "mine with lift" in {
@@ -120,7 +103,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
       im.exists {
         case Lift(v) if v >= 1.3 => true
         case _ => false
-      } should be(true)
+      } shouldBe true
     }
   }
 
@@ -135,9 +118,9 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     val emptyAntecedent = limitedResult.filter(_.antecedent.isEmpty)
     emptyAntecedent.length shouldBe 1
     val pmml = (new PMMLResult(emptyAntecedent) with ARuleText with BoolExpressionShortText).toPMML
-    pmml should not include ("<Text>()</Text>")
-    pmml should not include ("<FieldRef></FieldRef>")
-    pmml should not include ("antecedent=")
+    pmml should not include "<Text>()</Text>"
+    pmml should not include "<FieldRef></FieldRef>"
+    pmml should not include "antecedent="
     pmml should include(""" <FourFtTable a="3627" b="2554" c="0" d="0" """.trim)
     process.mine(
       MinerTask(Value(AllValues("district")), Set(Limit(100), Support(0.01), Confidence(0.1)), Value(AllValues("cílová proměnná")))
@@ -149,15 +132,29 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
       Set(),
       Set(Support(0.5)),
       Set(Confidence(0.5)),
-      Set(Support(1.1), Support(0.5)),
-      Set(Support(0.5), Support(1.1)),
-      Set(Support(0.0009), Support(0.5)),
-      Set(Support(0.5), Support(0.0009)),
-      Set(Support(0.5), Support(0.5), Limit(0))
+      Set(Support(1.1), Confidence(0.5)),
+      Set(Confidence(0.5), Support(1.1)),
+      Set(Support(0.0009), Confidence(0.5)),
+      Set(Support(0.5), Confidence(0.0009)),
+      Set(Support(0.5), Confidence(0.5), Limit(0)),
+      Set(Support(0.5), Confidence(0.5), RuleLength(0))
     )
     for (im <- badInterestMeasures) intercept[BadInputData] {
       process.mine(
         MinerTask(Value(AllValues("district")), im, Value(AllValues("cílová proměnná")))
+      )
+    }
+  }
+
+  it should "throw an exception due to bad attributes for CBA" in {
+    val badAttributes: Seq[BoolExpression[Attribute]] = Seq(
+      Value(AllValues("cílová proměnná")) AND Value(AllValues("age")),
+      Value(AllValues("cílová proměnná")) AND Value(FixedValue("age", "51")),
+      Value(*)
+    )
+    for (attr <- badAttributes) intercept[BadInputData] {
+      process.mine(
+        MinerTask(Value(AllValues("district")), Set(Support(0.5), Confidence(0.5), CBA), attr)
       )
     }
   }

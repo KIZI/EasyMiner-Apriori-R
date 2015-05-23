@@ -11,7 +11,7 @@ object Template {
   val defaultBasePath: String = "/cz/vse/easyminer/"
   
   private val df = {
-    var df = new DecimalFormat
+    val df = new DecimalFormat
     df.setGroupingUsed(false)
     df.setMaximumFractionDigits(6)
     df

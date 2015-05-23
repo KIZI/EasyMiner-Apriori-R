@@ -31,7 +31,7 @@ trait DefaultXmlHandlers extends DefaulHandlers {
       case rejections => mapHttpResponse(x =>
           x.withEntity(
             HttpEntity(
-              ContentType(`application/xml`, `UTF-8`), HttpData(getErrorMessage(x.status.intValue, x.status.reason, x.entity.asString).toString)
+              ContentType(`application/xml`, `UTF-8`), HttpData(getErrorMessage(x.status.intValue, x.status.reason, x.entity.asString).toString())
             )
           )
         ) {

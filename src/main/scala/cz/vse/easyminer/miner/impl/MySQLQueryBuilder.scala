@@ -1,14 +1,6 @@
 package cz.vse.easyminer.miner.impl
 
-import cz.vse.easyminer.miner.AND
-import cz.vse.easyminer.miner.AllValues
-import cz.vse.easyminer.miner.Attribute
-import cz.vse.easyminer.miner.BoolExpression
-import cz.vse.easyminer.miner.DatasetQueryBuilder
-import cz.vse.easyminer.miner.FixedValue
-import cz.vse.easyminer.miner.NOT
-import cz.vse.easyminer.miner.OR
-import cz.vse.easyminer.miner.Value
+import cz.vse.easyminer.miner.{AND, AllValues, Attribute, BoolExpression, DatasetQueryBuilder, FixedValue, NOT, OR, Value}
 
 trait MySQLQueryBuilder extends DatasetQueryBuilder {
 
@@ -26,10 +18,9 @@ trait MySQLQueryBuilder extends DatasetQueryBuilder {
   
   private def joinSQLMaps(m1 : Map[String, String], m2 : Map[String, String], f: (String, String) => String) = m1.foldLeft(m2){
     case (r, t @ (k, _)) if !r.contains(k) => r + t
-    case (r, (k, v)) => {
-        val rv = r(k)
-        r + (k -> (if (rv.isEmpty || v.isEmpty) "" else f(rv, v))) 
-      }
+    case (r, (k, v)) =>
+      val rv = r(k)
+      r + (k -> (if (rv.isEmpty || v.isEmpty) "" else f(rv, v)))
   }
   
   private def toSQLMap(exp: BoolExpression[Attribute]) : Map[String, String] = exp match {

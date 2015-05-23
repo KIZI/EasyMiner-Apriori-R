@@ -1,9 +1,9 @@
 package cz.vse.easyminer.miner.impl
 
-import cz.vse.easyminer.miner.BorrowedConnection
-import cz.vse.easyminer.miner.RConnectionPool
-import cz.vse.easyminer.util.Conf
 import java.util.Date
+
+import cz.vse.easyminer.miner.{BorrowedConnection, RConnectionPool}
+import cz.vse.easyminer.util.Conf
 import org.slf4j.LoggerFactory
 import scala.concurrent._
 
@@ -36,7 +36,7 @@ class RConnectionPoolImpl(rServer: String, rPort: Int, prepareLibs: Boolean = tr
     import ExecutionContext.Implicits.global
     activeConnections = activeConnections + 1
     val conn = try {
-      pool.dequeue
+      pool.dequeue()
     } catch {
       case _: NoSuchElementException => createConnection
     }
@@ -64,7 +64,7 @@ class RConnectionPoolImpl(rServer: String, rPort: Int, prepareLibs: Boolean = tr
 
   def refresh = pool.synchronized {
     while (pool.headOption.exists(_.created < System.currentTimeMillis - connectionTimeout * 1000)) {
-      pool.dequeue.close
+      pool.dequeue().close
     }
     while ( /*pool.size < maxIdle && activeConnections > pool.size || */ pool.size < minIdle) {
       pool.enqueue(createConnection)

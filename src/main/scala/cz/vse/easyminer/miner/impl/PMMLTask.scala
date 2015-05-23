@@ -1,21 +1,7 @@
 package cz.vse.easyminer.miner.impl
 
-import cz.vse.easyminer.miner.AllValues
-import cz.vse.easyminer.miner.Attribute
-import cz.vse.easyminer.miner.BadInputData
-import cz.vse.easyminer.miner.BoolExpression
-import cz.vse.easyminer.miner.Confidence
-import cz.vse.easyminer.miner.FixedValue
-import cz.vse.easyminer.miner.InterestMeasure
-import cz.vse.easyminer.miner.Lift
-import cz.vse.easyminer.miner.Limit
-import cz.vse.easyminer.miner.Support
-import cz.vse.easyminer.miner.Value
-import cz.vse.easyminer.util.AnyToDouble
-import cz.vse.easyminer.util.AnyToInt
-import cz.vse.easyminer.util.{ Lift => ALift }
-import scala.xml.Node
-import scalikejdbc._
+import cz.vse.easyminer.miner._
+import cz.vse.easyminer.util.{AnyToDouble, AnyToInt, Lift => ALift}
 
 class PMMLTask(pmml: xml.Node) {
 
@@ -25,7 +11,9 @@ class PMMLTask(pmml: xml.Node) {
   private val boolSignElemName = "LiteralSign"
   private val interestMeasureElemName = "InterestMeasure"
   private val interestThresholdElemName = "Threshold"
-  private val optToExp: PartialFunction[Option[xml.Node], BoolExpression[Attribute]] = { case Some(x) => toExpression(x) }
+  private val optToExp: PartialFunction[Option[xml.Node], BoolExpression[Attribute]] = {
+    case Some(x) => toExpression(x)
+  }
 
   private def getElementById(name: String, id: Int) = pmml \\ name find (x => (x \ "@id").text == id.toString)
 
@@ -34,8 +22,8 @@ class PMMLTask(pmml: xml.Node) {
   }
 
   private def toExpression(el: xml.Node): BoolExpression[Attribute] = el.label match {
-    case `boolExpElemName` => {
-      val rs = (el \ attrElemRefName)
+    case `boolExpElemName` =>
+      val rs = el \ attrElemRefName
       val elt = (el \ "@type").text
       def nextExps(implicit elt: String) = rs map findElemByElemId collect optToExp
       if (rs.size > 1) {
@@ -55,15 +43,13 @@ class PMMLTask(pmml: xml.Node) {
         implicit val tn = boolExpElemName
         nextExps.head
       }
-    }
-    case `attrElemName` => {
+    case `attrElemName` =>
       val attrName = (el \ "FieldRef").text
-      val attr = (el \ "Coefficient") match {
+      val attr = el \ "Coefficient" match {
         case el if (el \ "Type").text == "One category" => FixedValue(attrName, (el \ "Category").text)
         case _ => AllValues(attrName)
       }
       Value(attr)
-    }
     case elabel => throw new BadInputData(s"Unspecified element label: $elabel")
   }
 
@@ -77,24 +63,21 @@ class PMMLTask(pmml: xml.Node) {
     case _ => throw new BadInputData("Unparsable consequent.")
   }
 
-  def fetchInterestMeasures: Set[InterestMeasure] = {
+  def fetchInterestMeasures = {
     val limit = (pmml \\ "HypothesesCountMax")
       .map(_.text)
       .collectFirst {
-        case AnyToInt(x) if x > 0 => Limit(x)
-      }
-      .toSet
-    val im = (pmml \\ "InterestMeasureThreshold")
+      case AnyToInt(x) if x > 0 => Limit(x)
+    }.toSet
+    val im: Set[InterestMeasure] = (pmml \\ "InterestMeasureThreshold")
       .map(x => (x \ interestMeasureElemName).text -> (x \ interestThresholdElemName).text)
       .collect {
-        case (x, AnyToDouble(v)) if v > 0 => (x, v)
-      }
-      .collect {
-        case ("FUI", v) => Confidence(v)
-        case ("SUPP" | "BASE", v) => Support(v)
-        case ("LIFT", v) => Lift(v)
-      }
-      .toSet
+      case ("FUI", AnyToDouble(v)) => Confidence(v)
+      case ("SUPP" | "BASE", AnyToDouble(v)) => Support(v)
+      case ("LIFT", AnyToDouble(v)) => Lift(v)
+      case ("RULE_LENGTH", AnyToInt(v)) => RuleLength(v)
+      case ("CBA", _) => CBA
+    }.toSet
     im ++ limit
   }
 

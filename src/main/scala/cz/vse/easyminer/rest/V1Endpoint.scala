@@ -1,28 +1,21 @@
 package cz.vse.easyminer.rest
 
-import akka.actor.ActorIdentity
-import akka.actor.ActorRefFactory
+import java.util.{Date, UUID}
+
+import akka.actor.{ActorIdentity, ActorRefFactory, Identify}
+import akka.pattern.ask
 import akka.util.Timeout
 import cz.vse.easyminer.util.RestUtils.PathExtension
 import cz.vse.easyminer.util.Template
-import java.util.Date
-import java.util.UUID
-import scala.util.Success
-import scala.xml.NodeSeq
-import spray.http.ContentType
-import spray.http.HttpCharsets
-import spray.http.HttpEntity
-import spray.http.HttpHeaders
 import spray.http.HttpHeaders.RawHeader
-import spray.http.MediaTypes
-import spray.http.StatusCodes
+import spray.http.MediaTypes._
+import spray.http.{ContentType, HttpCharsets, HttpEntity, StatusCodes}
 import spray.routing.Directives
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import akka.actor.Identify
-import akka.pattern.ask
 import scala.language.postfixOps
-import MediaTypes._
+import scala.util.Success
+import scala.xml.NodeSeq
 
 class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
 
@@ -62,7 +55,7 @@ class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
   private def receiveResult(id: UUID) = {
     val actorExists = af.actorSelection("/user/" + idMinerPrefix + id.toString) ? Identify(1)
     Await.ready(actorExists, 10 seconds).value.get match {
-      case Success(ActorIdentity(_, Some(minerActor))) => {
+      case Success(ActorIdentity(_, Some(minerActor))) =>
         import MinerControllerActor._
         val resReq = minerActor ? Sent.ResultRequest
         Await.result(resReq, 30 seconds) match {
@@ -79,7 +72,6 @@ class V1Endpoint(implicit af: ActorRefFactory) extends Directives {
             </status>
           )
         }
-      }
       case _ => reject
     }
   }

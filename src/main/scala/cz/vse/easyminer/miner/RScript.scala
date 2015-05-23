@@ -1,7 +1,5 @@
 package cz.vse.easyminer.miner
 
-import cz.vse.easyminer.util.BasicFunction._
-
 trait RScript {
 
   val rcp: RConnectionPool

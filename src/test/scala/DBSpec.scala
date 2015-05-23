@@ -23,7 +23,7 @@ class DBSpec extends Suites(new DatasetSpec, new MineSpec, new OutputSpec) with 
       )
     )
     val tableExists = DB readOnly { implicit session =>
-      sql"SHOW TABLES LIKE $originalTableName".map(_ => true).first.apply
+      sql"SHOW TABLES LIKE $originalTableName".map(_ => true).first().apply
     }
     using(ConnectionPool.borrow()) { conn =>
       if (tableExists.isEmpty) tryClose(new StringReader(datasetSql(originalTableName)))(new ScriptRunner(conn, false, false).runScript)

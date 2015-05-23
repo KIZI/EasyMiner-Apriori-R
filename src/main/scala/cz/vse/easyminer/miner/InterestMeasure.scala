@@ -7,3 +7,5 @@ case class Support(value: Double) extends InterestMeasure
 case class Lift(value: Double) extends InterestMeasure
 case class Count(value: Int) extends InterestMeasure
 case class Limit(value: Int) extends InterestMeasure
+case class RuleLength(value: Int) extends InterestMeasure
+case object CBA extends InterestMeasure

@@ -1,13 +1,6 @@
 package cz.vse.easyminer.miner.impl
 
-import cz.vse.easyminer.miner.ANDOR
-import cz.vse.easyminer.miner.ARule
-import cz.vse.easyminer.miner.ARuleVisualizer
-import cz.vse.easyminer.miner.BoolExpression
-import cz.vse.easyminer.miner.BoolExpressionVisualizer
-import cz.vse.easyminer.miner.FixedValue
-import cz.vse.easyminer.miner.NOT
-import cz.vse.easyminer.miner.Value
+import cz.vse.easyminer.miner.{ANDOR, ARule, ARuleVisualizer, BoolExpression, BoolExpressionVisualizer, FixedValue, NOT, Value}
 import cz.vse.easyminer.util.Template
 
 class PMMLResult(arules: Seq[ARule]) {

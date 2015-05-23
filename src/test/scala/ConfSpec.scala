@@ -50,7 +50,7 @@ class ConfSpec extends FlatSpec with Matchers with ConfOpt {
   }
 
   it should "not be default string for rest.address" in {
-    Conf().getOrElse[String]("rest.address", "default") should not be ("default")
+    Conf().getOrElse[String]("rest.address", "default") should not be "default"
   }
 
 }
