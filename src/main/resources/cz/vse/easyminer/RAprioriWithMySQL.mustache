@@ -34,12 +34,9 @@ rules <- apriori(txns, parameter = list(confidence = {{{confidence}}}, support =
 {{#lift}}
 rules <- subset(rules, subset = lift >= {{{lift}}})
 {{/lift}}
+rules <- as(rules,"data.frame")
 {{#cba}}
-rules <- as(rules,"data.frame")
 rules <- pruning(train, rules, method="m2cba")
-{{/cba}}
-{{^cba}}
-rules <- as(rules,"data.frame")
 {{/cba}}
 {{#limit}}
 rules <- rules[with(rules, order(-confidence)), ]
