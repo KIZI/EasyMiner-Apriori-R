@@ -27,7 +27,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     val pmml = inputpmml(tableName).get
   }
 
-  "R connection pooling" should "have minIdle = 2 and maxIdle = 10" ignore {
+  "R connection pooling" should "have minIdle = 2 and maxIdle = 10" in {
     val conn = new RConnectionPoolImpl(rserveAddress, rservePort, false)
     def makeBorrowedConnections(num: Int) = (0 until num).map(_ => conn.borrow).toList
     var borrowedConnections = List.empty[BorrowedConnection]
@@ -60,7 +60,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     conn.close
   }
 
-  "R Script with UTF8+space select query and consequents" should "return one association rule" ignore {
+  "R Script with UTF8+space select query and consequents" should "return one association rule" in {
     R.eval(
       rscript(
         tableName,
@@ -72,7 +72,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     ) should have length 2
   }
 
-  "R Script with small support and confidence" should "return many results" ignore {
+  "R Script with small support and confidence" should "return many results" in {
     R.eval(
       rscript(
         tableName,
@@ -84,7 +84,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     ).length shouldBe 20339
   }
 
-  "AprioriRProcess" should "mine" ignore {
+  "AprioriRProcess" should "mine" in {
     val x = process.mine(
       MinerTask(Value(AllValues("district")), Set(Support(0.01), Confidence(0.9)), Value(AllValues("cílová proměnná")))
     ) match {
@@ -94,7 +94,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     x shouldBe true
   }
 
-  it should "mine with lift" ignore {
+  it should "mine with lift" in {
     val arules = process.mine(
       MinerTask(Value(AllValues("district")), Set(Lift(1.3), Confidence(0.1), Support(0.001)), Value(AllValues("cílová proměnná")))
     )
@@ -107,7 +107,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     }
   }
 
-  it should "mine with rule length" ignore {
+  it should "mine with rule length" in {
     val lengthsAndResults = Seq(
       1 -> 2,
       2 -> 479,
@@ -128,11 +128,11 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     val withCba = process.mine(
       MinerTask(Value(AllValues("district")) AND Value(AllValues("age")) AND Value(AllValues("salary")), Set(CBA, Confidence(0.01), Support(0.001)), Value(AllValues("cílová proměnná")))
     )
-    println(withoutCba.length)
-    println(withCba.length)
+    withoutCba.length shouldBe 2601
+    withCba.length shouldBe 554
   }
 
-  it should "mine with limit 100 and return 100 with one empty antecedent" ignore {
+  it should "mine with limit 100 and return 100 with one empty antecedent" in {
     process.mine(
       MinerTask(Value(AllValues("district")), Set(Support(0.001), Confidence(0.1)), Value(AllValues("cílová proměnná")))
     ).length shouldBe 186
@@ -152,7 +152,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     ).length shouldBe 22
   }
 
-  it should "throw an exception due to bad interest measure values" ignore {
+  it should "throw an exception due to bad interest measure values" in {
     val badInterestMeasures: Seq[Set[InterestMeasure]] = Seq(
       Set(),
       Set(Support(0.5)),
@@ -171,7 +171,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     }
   }
 
-  it should "throw an exception due to bad attributes for CBA" ignore {
+  it should "throw an exception due to bad attributes for CBA" in {
     val badAttributes: Seq[BoolExpression[Attribute]] = Seq(
       Value(AllValues("cílová proměnná")) AND Value(AllValues("age")),
       Value(AllValues("cílová proměnná")) AND Value(FixedValue("age", "51")),
@@ -184,7 +184,7 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
     }
   }
 
-  it should "throw an exception due to quotation marks within values" ignore {
+  it should "throw an exception due to quotation marks within values" in {
     val badAntCon: Seq[(BoolExpression[Attribute], BoolExpression[Attribute])] = Seq(
       AND(Value(FixedValue("xy\"", "xy\"")), Value(FixedValue("yx\"", "yx\""))) -> Value(AllValues("cílová proměnná")),
       Value(AllValues("cílová proměnná")) -> AND(Value(FixedValue("xy\"", "xy\"")), Value(FixedValue("yx\"", "yx\""))),
