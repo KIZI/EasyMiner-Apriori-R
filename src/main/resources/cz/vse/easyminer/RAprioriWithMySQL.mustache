@@ -35,13 +35,17 @@ rules <- apriori(txns, parameter = list(confidence = {{{confidence}}}, support =
 rules <- subset(rules, subset = lift >= {{{lift}}})
 {{/lift}}
 rules <- as(rules,"data.frame")
+if(nrow(rules) > 0) {
 {{#cba}}
 rules <- pruning(train, rules, method="m2cba")
 {{/cba}}
 {{#limit}}
-rules <- rules[with(rules, order(-confidence)), ]
+{{^cba}}
+rules <- rules[with(rules, order(-confidence, -support)), ]
+{{/cba}}
 rules <- head(rules, {{{limit}}})
 {{/limit}}
+}
 
 options(width=10000)
 options(max.print=1000000)

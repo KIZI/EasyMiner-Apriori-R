@@ -122,20 +122,33 @@ class MineSpec extends FlatSpec with Matchers with ConfOpt with TemplateOpt {
   }
 
   it should "mine with CBA" in {
+    val antecedent = Value(AllValues("district")) AND Value(AllValues("age")) AND Value(AllValues("salary"))
+    val consequent = Value(AllValues("cílová proměnná"))
     val withoutCba = process.mine(
-      MinerTask(Value(AllValues("district")) AND Value(AllValues("age")) AND Value(AllValues("salary")), Set(Confidence(0.01), Support(0.001)), Value(AllValues("cílová proměnná")))
+      MinerTask(antecedent, Set(Confidence(0.01), Support(0.001)), consequent)
     )
     val withCba = process.mine(
-      MinerTask(Value(AllValues("district")) AND Value(AllValues("age")) AND Value(AllValues("salary")), Set(CBA, Confidence(0.01), Support(0.001)), Value(AllValues("cílová proměnná")))
+      MinerTask(antecedent, Set(CBA, Confidence(0.01), Support(0.001)), consequent)
+    )
+    val withCbaLimit = process.mine(
+      MinerTask(antecedent, Set(CBA, Confidence(0.01), Support(0.001), Limit(100)), consequent)
+    )
+    val withCbaZero = process.mine(
+      MinerTask(antecedent, Set(CBA, Confidence(0.9), Support(0.9)), consequent)
     )
     withoutCba.length shouldBe 2601
     withCba.length shouldBe 554
+    withCbaLimit.length shouldBe 100
+    withCbaZero.length shouldBe 0
   }
 
   it should "mine with limit 100 and return 100 with one empty antecedent" in {
     process.mine(
       MinerTask(Value(AllValues("district")), Set(Support(0.001), Confidence(0.1)), Value(AllValues("cílová proměnná")))
     ).length shouldBe 186
+    process.mine(
+      MinerTask(Value(AllValues("district")), Set(Support(0.9), Confidence(0.9)), Value(AllValues("cílová proměnná")))
+    ).length shouldBe 0
     val limitedResult = process.mine(
       MinerTask(Value(AllValues("district")), Set(Limit(100), Support(0.001), Confidence(0.1)), Value(AllValues("cílová proměnná")))
     )
