@@ -17,7 +17,7 @@ Next instructions have been written only for the Debian distribution.
  
 ### R installation instructions with all required dependencies
 
-First, all following commands should be run as root or with sudo prefix.
+First, all following commands should be run as the root or with the sudo prefix.
 
 1. Add the R repository by adding this line to /etc/apt/sources.list
    
@@ -49,7 +49,7 @@ First, all following commands should be run as root or with sudo prefix.
 
 ### Start/Stop service for EasyMiner-Apriori-R
 
-On the server side create some folder where this application will be located and copy the one jar file to this folder with name: easyminer-apriori-r.jar. In this folder create a jdbc folder and download mysql jdbc connector to this directory. After this create rserve-start.R, rserve-stop.R and run files with these contents:
+On the server side create some folder where this application will be located and copy the one jar file to this folder with name: easyminer-apriori-r.jar. In this folder create a jdbc folder and download mysql jdbc connector to this directory. After this, create rserve-start.R, rserve-stop.R and run files with these contents:
 
 rserve-start.R
 ```
@@ -104,15 +104,15 @@ set -e
 
 start() {
         echo "Starting easyminer apriori R rest service..."
-	R CMD Rserve
+        R CMD Rserve
         start-stop-daemon --start --make-pidfile --pidfile /var/run/easyminer-apriori-r.pid --background --exec /path/to/easyminer-apriori-r/folder/run
 }
 
 stop() {
         echo "Stopping easyminer apriori R rest service..."
-	pkill -TERM -P $(cat /var/run/easyminer-apriori-r.pid)
+        pkill -TERM -P $(cat /var/run/easyminer-apriori-r.pid)
         start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/easyminer-apriori-r.pid
-	Rscript /path/to/easyminer-apriori-r/folder/rserve-stop.R
+        Rscript /path/to/easyminer-apriori-r/folder/rserve-stop.R
 }
 
 #
