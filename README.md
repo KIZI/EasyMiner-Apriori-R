@@ -143,3 +143,29 @@ After these steps you should be able to start/stop the rest service by these com
 service easyminer-apriori-r start
 service easyminer-apriori-r stop
 ```
+
+## Service description
+
+The basic API path is: /api/v1
+
+There are only two REST operations within this service:
+
+1. Path: /api/v1/mine
+   * Description: Create a mining task by some PMML task definition.
+   * Method: POST
+   * Required headers:
+      * Accept: application/xml
+      * Content-Type: application/xml; charset=UTF-8
+   * Content body: PMML document with a task definition
+   * Possible response codes:
+      * 202: Task was accepted and is in progress. There is a path to the result page in the Location header.
+      * 400: Wrong input task data.
+      * 500: Wrong input task data or another internal error.
+2. Path: /api/v1/result/{taskId}
+   * Description: Return some result of the mining task.
+   * Method: GET
+   * Possible response codes:
+      * 200: The task has been finished. It returns a result in the PMML format.
+      * 202: This task is still in progress.
+      * 404: The task is not exist or has been picked up.
+      * 500: An error during mining process.
