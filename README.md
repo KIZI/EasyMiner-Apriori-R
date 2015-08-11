@@ -171,3 +171,6 @@ There are only two REST operations within this service:
       * 500: An error during mining process.
 
 Some examples of input PMML files are in the [test resource folder](https://github.com/KIZI/EasyMiner-Apriori-R/tree/master/src/test/resources).
+
+A detailed description of the modified PMML model is contained here:
+> Kliegr, Tomáš, and Jan Rauch. "An XML format for association rule models based on the GUHA method." Semantic Web Rules. Springer Berlin Heidelberg, 2010. 273-288.  
