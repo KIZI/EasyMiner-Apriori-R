@@ -46,6 +46,12 @@ First, all following commands should be run as the root or with the sudo prefix.
    library("devtools")
    devtools::install_github("jaroslav-kuchar/rCBA")
    ```
+8. If the  ```install.packages("devtools") ``` command fails, the following might help:
+   
+   ```
+   sudo apt-get install libcurl4-openssl-dev
+   sudo apt-get install libxml2-dev
+   ```
 
 ### Start/Stop service for EasyMiner-Apriori-R
 
