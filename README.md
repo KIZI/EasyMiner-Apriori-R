@@ -3,7 +3,17 @@ EasyMiner Core apriori version with R and MySQL
 
 ## Installation
 
-First pull the latest version from github and make a one jar file by this sbt command:
+
+Pull the latest version from github
+
+Install SBT if not already installed: http://www.scala-sbt.org/0.13/tutorial/Installing-sbt-on-Linux.html
+
+Run SBT with the following command in the project directory
+```
+> sbt
+```
+
+Make a one jar file by this sbt command:
 ```
 > one-jar
 ```
@@ -176,7 +186,7 @@ There are only two REST operations within this service:
       * 404: The task is not exist or has been picked up.
       * 500: An error during mining process.
 
-Some examples of input PMML files are in the [test resource folder](https://github.com/KIZI/EasyMiner-Apriori-R/tree/master/src/test/resources).
+Some examples of input PMML files are in the [examples resource folder](https://github.com/KIZI/EasyMiner-Apriori-R/tree/master/examples).
 
 A detailed description of the modified PMML model is contained here:
 > Kliegr, Tomáš, and Jan Rauch. "An XML format for association rule models based on the GUHA method." Semantic Web Rules. Springer Berlin Heidelberg, 2010. 273-288.  
