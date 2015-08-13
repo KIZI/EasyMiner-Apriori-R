@@ -6,11 +6,18 @@ EasyMiner Core apriori version with R and MySQL
 
 Pull the latest version from github
 
+```
+> git clone https://github.com/KIZI/EasyMiner-Apriori-R.git
+```
+
+
 Install SBT if not already installed: http://www.scala-sbt.org/0.13/tutorial/Installing-sbt-on-Linux.html
 
-Run SBT with the following command in the project directory
+Run SBT with the following command in the project directory 
+
 ```
-> sbt
+cd EasyMiner-Apriori-R/
+sbt
 ```
 
 Make a one jar file by this sbt command:
@@ -29,7 +36,7 @@ Next instructions have been written only for the Debian distribution.
 
 First, all following commands should be run as the root or with the sudo prefix.
 
-1. Add the R repository by adding this line to /etc/apt/sources.list
+1. To get up-to-date  R version  add this line to /etc/apt/sources.list
    
    ```deb http://cran.r-project.org/bin/linux/debian wheezy-cran3/```
    
@@ -46,7 +53,14 @@ First, all following commands should be run as the root or with the sudo prefix.
 4. Run R with command: R
 5. Install rJava by this command: ```install.packages("rJava")```
 6. If the last step fails you should configure Java variables by this shell command: ```R CMD javareconf```. Then try to repeat the previous step.
-7. Install other libraries:
+7. Install devtools by this command: ```install.packages("devtools")```
+8. If the last step fails install these dependencies:
+   
+   ```
+   apt-get install libcurl4-openssl-dev
+   apt-get install libxml2-dev
+   ```
+9. Install other libraries:
    
    ```
    install.packages("RJDBC")
@@ -56,16 +70,14 @@ First, all following commands should be run as the root or with the sudo prefix.
    library("devtools")
    devtools::install_github("jaroslav-kuchar/rCBA")
    ```
-8. If the  ```install.packages("devtools") ``` command fails, the following might help:
-   
-   ```
-   sudo apt-get install libcurl4-openssl-dev
-   sudo apt-get install libxml2-dev
-   ```
 
 ### Start/Stop service for EasyMiner-Apriori-R
 
-On the server side create some folder where this application will be located and copy the one jar file to this folder with name: easyminer-apriori-r.jar. In this folder create a jdbc folder and download mysql jdbc connector to this directory. After this, create rserve-start.R, rserve-stop.R and run files with these contents:
+On the server side create some folder where this application will be located and copy the one jar file (target/scala-2.10/easyminer-apriori-r_2.10-1.0-one-jar) to this folder with name: easyminer-apriori-r.jar
+
+In this folder create a ```jdbc``` folder and download mysql jdbc connector (from https://dev.mysql.com/downloads/connector/j/5.1.html) to this directory. 
+
+After this, create ```rserve-start.R```, ```rserve-stop.R``` and ```run``` files with these contents:
 
 rserve-start.R
 ```
@@ -91,6 +103,12 @@ export REST_ADDRESS=localhost
 export REST_PORT=8888
 cd /path/to/easyminer-apriori-r/folder
 java -Duser.country=US -Duser.language=en -Dfile.encoding=UTF-8 -Djava.net.preferIPv4Stack=true -jar easyminer-apriori-r.jar > rest.log 2>&1
+```
+
+In ```run``` specify absolute path to the application directory (at two places).
+
+``` 
+chmod +x run
 ```
 
 The final easyminer-apriori-r folder should look like this:
@@ -151,6 +169,12 @@ case "$1" in
         exit 1
 esac
 exit 0
+```
+
+In ```easyminer-apriori-r``` specify absolute path to the application directory (at two places).
+
+``` 
+chmod +x run
 ```
 
 After these steps you should be able to start/stop the rest service by these commands:
