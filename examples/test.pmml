@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?oxygen SCHSchema="http://sewebar.vse.cz/schemas/GUHARestr0_1.sch"?>
+<PMML xmlns="http://www.dmg.org/PMML-4_0" version="4.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pmml="http://www.dmg.org/PMML-4_0"
+    xsi:schemaLocation="http://www.dmg.org/PMML-4_0 http://sewebar.vse.cz/schemas/PMML4.0+GUHA0.1.xsd">
+    <Header copyright="Copyright (c) KIZI UEP">
+        <Extension name="dataset" value="test"/>
+        <Extension name="author" value="admin"/>
+        <Extension name="subsystem" value="4ft-Miner"/>
+        <Extension name="module" value="4ftResult.exe"/>
+        <Extension name="format" value="4ftMiner.Task"/>
+		<Extension name="database-type" value="mysql"/>
+        <Extension name="database-server" value="{{dbserver}}"/>
+        <Extension name="database-name" value="{{dbname}}"/>
+        <Extension name="database-user" value="{{dbuser}}"/>
+        <Extension name="database-password" value="{{dbpassword}}"/>
+        <Application name="SEWEBAR-CMS" version="0.00.01 24.09.2014"/>
+        <Annotation/>
+    </Header>
+    <DataDictionary/>
+    <guha:AssociationModel xmlns:guha="http://keg.vse.cz/ns/GUHA0.1rev1" xmlns="" xsi:schemaLocation="http://keg.vse.cz/ns/GUHA0.1rev1 http://sewebar.vse.cz/schemas/GUHA0.1rev1.xsd" modelName="f54684f92035a48c6807cae7371b1fa3" functionName="associationRules" algorithmName="4ft">
+      <TaskSetting>
+         <Extension name="LISp-Miner">
+            <HypothesesCountMax>100</HypothesesCountMax>
+         </Extension>
+         <Extension name="metabase" value="LM Barbora.mdb MB" />
+         <BBASettings>
+            <BBASetting id="1">
+               <Text>rating</Text>
+               <Name>rating</Name>
+               <FieldRef>rating</FieldRef>
+               <Coefficient>
+                  <Type>One category</Type>
+                  <Category>A</Category>
+                  <MinimalLength>1</MinimalLength>
+                  <MaximalLength>1</MaximalLength>
+               </Coefficient>
+            </BBASetting>
+			      <BBASetting id="2">
+               <Text>age</Text>
+               <Name>age</Name>
+               <FieldRef>age</FieldRef>
+               <Coefficient>
+                  <Type>Subset</Type>
+                  <MinimalLength>1</MinimalLength>
+                  <MaximalLength>1</MaximalLength>
+               </Coefficient>
+            </BBASetting>
+            <BBASetting id="3">
+               <Text>district</Text>
+               <Name>district</Name>
+               <FieldRef>district</FieldRef>
+               <Coefficient>
+                  <Type>Subset</Type>
+                  <MinimalLength>1</MinimalLength>
+                  <MaximalLength>1</MaximalLength>
+               </Coefficient>
+            </BBASetting>
+			      <BBASetting id="4">
+               <Text>payments</Text>
+               <Name>payments</Name>
+               <FieldRef>payments</FieldRef>
+               <Coefficient>
+                  <Type>Subset</Type>
+                  <MinimalLength>1</MinimalLength>
+                  <MaximalLength>1</MaximalLength>
+               </Coefficient>
+            </BBASetting>
+            <BBASetting id="5">
+               <Text>salary</Text>
+               <Name>salary</Name>
+               <FieldRef>salary</FieldRef>
+               <Coefficient>
+                  <Type>Subset</Type>
+                  <MinimalLength>1</MinimalLength>
+                  <MaximalLength>1</MaximalLength>
+               </Coefficient>
+            </BBASetting>
+         </BBASettings>
+         <DBASettings>
+            <DBASetting id="6" type="Conjunction">
+               <BASettingRef>8</BASettingRef>
+			         <BASettingRef>9</BASettingRef>
+			         <BASettingRef>10</BASettingRef>
+			         <BASettingRef>11</BASettingRef>
+               <MinimalLength>1</MinimalLength>
+            </DBASetting>
+            <DBASetting id="7" type="Literal">
+               <BASettingRef>1</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+            <DBASetting id="8" type="Literal">
+               <BASettingRef>2</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+            <DBASetting id="9" type="Literal">
+               <BASettingRef>3</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+            <DBASetting id="10" type="Literal">
+               <BASettingRef>4</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+            <DBASetting id="11" type="Literal">
+               <BASettingRef>5</BASettingRef>
+               <LiteralSign>Positive</LiteralSign>
+            </DBASetting>
+         </DBASettings>
+         <AntecedentSetting>6</AntecedentSetting>
+         <ConsequentSetting>7</ConsequentSetting>
+         <InterestMeasureSetting>
+            <InterestMeasureThreshold id="8">
+               <InterestMeasure>FUI</InterestMeasure>
+               <Threshold>0.7</Threshold>
+               <ThresholdType>% of all</ThresholdType>
+               <CompareType>Greater than or equal</CompareType>
+            </InterestMeasureThreshold>
+            <InterestMeasureThreshold id="9">
+               <InterestMeasure>SUPP</InterestMeasure>
+               <Threshold>0.01</Threshold>
+               <ThresholdType>% of all</ThresholdType>
+               <CompareType>Greater than or equal</CompareType>
+            </InterestMeasureThreshold>
+         </InterestMeasureSetting>
+      </TaskSetting>
+      <AssociationRules />
+   </guha:AssociationModel>
+</PMML>
