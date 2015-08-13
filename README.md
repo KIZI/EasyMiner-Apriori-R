@@ -188,6 +188,10 @@ service easyminer-apriori-r start
 service easyminer-apriori-r stop
 ```
 
+If you get "package not found" error, try reinstalling all R packages with explicit definition of installation path, which is accessible by Rserve:
+In ```/etc/R/Renviron.site``` set R_LIBS to "/usr/local/lib/R/site-library"
+And then reinstall all R packages except devtools.
+
 ## Service description
 
 The basic API path is: /api/v1
@@ -218,7 +222,7 @@ There are only two REST operations within this service:
 
 Some examples of input PMML files are in the [examples resource folder](https://github.com/KIZI/EasyMiner-Apriori-R/tree/master/examples). 
 
-1. Replace the {{dbserver}}, {{dbname}} and {{dbpassword}} placeholders in test.sql
+1. Move to the examples folder and replace the {{dbserver}}, {{dbname}} and {{dbpassword}} placeholders in test.sql
 
 2. Import test.sql to mysql, e.g. using these mysql commands
 
@@ -230,19 +234,19 @@ source test.sql;
 ```
 4. Send HTTP POST request containing test.pmml to the  ```/api/v1/mine``` endpoint
 ```
- http://localhost:8888/api/v1/mine
+ curl -X POST -d @test.pmml http://localhost:8888/api/v1/mine -H "Content-Type: application/xml; charset=UTF-8" -H "Accept: application/xml"
 ```
 The endpoint returns 202 if all went down well. Note the value of the Location header.
 
 This might look as follows:
 ```
-/api/v1/result/cd874827-e413-46d0-95a4-66379d13101a
+/api/v1/result/199fdaef-97ab-4b09-a445-fa5e2b1467a3
 ```
 5. Send HTTP GET request to the  ```/api/v1/result``` endpoint
 
  The query URL might look as follows:
 ```
-http://localhost:8888/api/v1/result/cd874827-e413-46d0-95a4-66379d13101a
+curl -X GET http://localhost:8888/api/v1/result/199fdaef-97ab-4b09-a445-fa5e2b1467a3
 ```
 
 6. The output should contain 11 AssociationRule elements
