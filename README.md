@@ -210,6 +210,8 @@ There are only two REST operations within this service:
       * 404: The task is not exist or has been picked up.
       * 500: An error during mining process.
 
+### Example use of the service
+
 Some examples of input PMML files are in the [examples resource folder](https://github.com/KIZI/EasyMiner-Apriori-R/tree/master/examples). 
 1. Replace the {{dbserver}}, {{dbname}} and {{dbpassword}} placeholders in test.sql
 2. Import test.sql to mysql, e.g. using these mysql commands
