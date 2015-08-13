@@ -228,7 +228,7 @@ source test.sql;
 The endpoint returns 202 if all went down well. Note the value of the Location header 
 This might look as follows:
 ```
-./api/v1/result/cd874827-e413-46d0-95a4-66379d13101a
+/api/v1/result/cd874827-e413-46d0-95a4-66379d13101a
 ```
 4. Send HTTP GET request to the  ```/api/v1/result``` endpoint
 The query URL might look as follows:
