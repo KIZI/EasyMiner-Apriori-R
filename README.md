@@ -210,7 +210,31 @@ There are only two REST operations within this service:
       * 404: The task is not exist or has been picked up.
       * 500: An error during mining process.
 
-Some examples of input PMML files are in the [examples resource folder](https://github.com/KIZI/EasyMiner-Apriori-R/tree/master/examples).
+Some examples of input PMML files are in the [examples resource folder](https://github.com/KIZI/EasyMiner-Apriori-R/tree/master/examples). 
+1. Replace the {{dbserver}}, {{dbname}} and {{dbpassword}} placeholders in test.sql
+2. Import test.sql to mysql, e.g. using these mysql commands
+Assuming that you have replaced ```{{dbname}}``` with ```experiments``` (your new database name):
+```
+create database experiments;
+use experiments;
+source test.sql;
+```
+3. Send HTTP POST request containing test.pmml to the  ```/api/v1/mine``` endpoint
+```
+ http://localhost:8888/api/v1/mine
+```
+The endpoint returns 202 if all went down well. Note the value of the Location header 
+This might look as follows:
+```
+./api/v1/result/cd874827-e413-46d0-95a4-66379d13101a
+```
+4. Send HTTP GET request to the  ```/api/v1/result``` endpoint
+The query URL might look as follows:
+```
+http://localhost:8888/api/v1/result/cd874827-e413-46d0-95a4-66379d13101a
+```
+5. The output should contain 11 AssociationRule elements
+ 
 
 A detailed description of the modified PMML model is contained here:
 > Kliegr, Tomáš, and Jan Rauch. "An XML format for association rule models based on the GUHA method." Semantic Web Rules. Springer Berlin Heidelberg, 2010. 273-288.  
