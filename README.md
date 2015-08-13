@@ -215,6 +215,7 @@ There are only two REST operations within this service:
 Some examples of input PMML files are in the [examples resource folder](https://github.com/KIZI/EasyMiner-Apriori-R/tree/master/examples). 
 1. Replace the {{dbserver}}, {{dbname}} and {{dbpassword}} placeholders in test.sql
 2. Import test.sql to mysql, e.g. using these mysql commands
+3. 
 Assuming that you have replaced ```{{dbname}}``` with ```experiments``` (your new database name):
 ```
 create database experiments;
@@ -225,12 +226,14 @@ source test.sql;
 ```
  http://localhost:8888/api/v1/mine
 ```
-The endpoint returns 202 if all went down well. Note the value of the Location header 
+The endpoint returns 202 if all went down well. Note the value of the Location header.
+
 This might look as follows:
 ```
 /api/v1/result/cd874827-e413-46d0-95a4-66379d13101a
 ```
 4. Send HTTP GET request to the  ```/api/v1/result``` endpoint
+5. 
 The query URL might look as follows:
 ```
 http://localhost:8888/api/v1/result/cd874827-e413-46d0-95a4-66379d13101a
