@@ -77,7 +77,7 @@ First, all following commands should be run as the root or with the sudo prefix.
  ```
 ### Start/Stop service for EasyMiner-Apriori-R
 
-On the server side create some folder where this application will be located and copy the one jar file (target/scala-2.10/easyminer-apriori-r_2.10-1.0-one-jar) to this folder with name: easyminer-apriori-r.jar
+On the server side create some folder where this application will be located and copy the one jar file (target/scala-2.10/easyminer-apriori-r_2.10-1.0-one-jar.jar) to this folder with name: easyminer-apriori-r.jar
 
 In this folder create a ```jdbc``` folder and download mysql jdbc connector (from https://dev.mysql.com/downloads/connector/j/5.1.html) to this directory. 
 
