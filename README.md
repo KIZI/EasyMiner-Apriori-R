@@ -51,10 +51,10 @@ First, all following commands should be run as the root or with the sudo prefix.
    
 3. Export JAVA_HOME environment variable with a path to the JDK folder
 4. Run R with command: R
-5. Install rJava by this command: ```install.packages("rJava")```
+5. Install rJava by this command: ```install.packages("rJava",dependencies=TRUE)```
 6. If the last step fails you should configure Java variables by this shell command: ```R CMD javareconf```. Then try to repeat the previous step and repeat.
 7. Run ```R CMD javareconf```
-7. Install devtools by this command: ```install.packages("devtools")```
+7. Install devtools by this command: ```install.packages("devtools",dependencies=TRUE)```
 8. If the last step fails install these dependencies:
    
    ```
@@ -64,10 +64,9 @@ First, all following commands should be run as the root or with the sudo prefix.
 9. Install other libraries:
    
    ```
-   install.packages("RJDBC")
-   install.packages("Rserve")
-   install.packages("arules")
-   install.packages("devtools")
+   install.packages("RJDBC",dependencies=TRUE)
+   install.packages("Rserve",dependencies=TRUE)
+   install.packages("arules",dependencies=TRUE)
    library("devtools")
    devtools::install_github("jaroslav-kuchar/rCBA")
    ```
