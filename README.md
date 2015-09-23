@@ -67,14 +67,11 @@ First, all following commands should be run as the root or with the sudo prefix.
    install.packages("RJDBC",dependencies=TRUE)
    install.packages("Rserve",dependencies=TRUE)
    install.packages("arules",dependencies=TRUE)
+   install.packages("RSclient",dependencies=TRUE)
    library("devtools")
    devtools::install_github("jaroslav-kuchar/rCBA")
    ```
 
-10. Install RSclient
- ```
- apt-get install r-cran-rsclient
- ```
 ### Start/Stop service for EasyMiner-Apriori-R
 
 On the server side create some folder where this application will be located and copy the one jar file (target/scala-2.10/easyminer-apriori-r_2.10-1.0-one-jar.jar) to this folder with name: easyminer-apriori-r.jar
